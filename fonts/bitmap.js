@@ -80,6 +80,25 @@ function getGlyph(char) {
   return FONT_5X7["?"];
 }
 
+function wrapText(text, maxCharsPerLine) {
+  const lines = [];
+  let currentLine = "";
+  for (const ch of text) {
+    if (currentLine.length >= maxCharsPerLine) {
+      if (currentLine.trim()) {
+        lines.push(currentLine.trim());
+      }
+      currentLine = ch;
+    } else {
+      currentLine += ch;
+    }
+  }
+  if (currentLine.trim()) {
+    lines.push(currentLine.trim());
+  }
+  return lines;
+}
+
 export async function renderBitmapToPng({
   text,
   width,
@@ -94,10 +113,18 @@ export async function renderBitmapToPng({
   const glyphW = 5 * pixelSize;
   const glyphH = 7 * pixelSize;
   const spacing = letterSpacing * pixelSize;
-  const textWidth = Math.max(1, text.length * (glyphW + spacing) - spacing);
-  const textHeight = glyphH;
-  const offsetX = Math.floor((width - textWidth) / 2);
-  const offsetY = Math.floor((height - textHeight) / 2);
+  const lineHeight = glyphH + pixelSize * 2; // extra space between lines
+
+  // Calculate how many characters fit per line
+  const maxLineWidth = width - pixelSize * 4; // margins on sides
+  const maxCharsPerLine = Math.floor(maxLineWidth / (glyphW + spacing));
+
+  // Wrap text into lines
+  const lines = wrapText(text, maxCharsPerLine);
+
+  // Calculate total text height and vertical centering
+  const totalTextHeight = lines.length * lineHeight;
+  const startY = Math.floor((height - totalTextHeight) / 2);
 
   const channels = 4;
   const buffer = Buffer.alloc(width * height * channels);
@@ -110,33 +137,40 @@ export async function renderBitmapToPng({
     buffer[i * 4 + 3] = bg.a;
   }
 
-  let cursorX = offsetX;
-  for (const ch of text) {
-    const glyph = getGlyph(ch);
-    glyph.forEach((rowBits, row) => {
-      for (let col = 0; col < 5; col++) {
-        if (rowBits & (1 << (4 - col))) {
-          const startX = cursorX + col * pixelSize;
-          const startY = offsetY + row * pixelSize;
-          for (let py = 0; py < pixelSize; py++) {
-            const y = startY + py;
-            if (y < 0 || y >= height) continue;
-            const rowOffset = y * width * channels;
-            for (let px = 0; px < pixelSize; px++) {
-              const x = startX + px;
-              if (x < 0 || x >= width) continue;
-              const idx = rowOffset + x * channels;
-              buffer[idx + 0] = fg.r;
-              buffer[idx + 1] = fg.g;
-              buffer[idx + 2] = fg.b;
-              buffer[idx + 3] = fg.a;
+  // Render each line
+  lines.forEach((line, lineIdx) => {
+    const lineWidth = Math.max(1, line.length * (glyphW + spacing) - spacing);
+    const offsetX = Math.floor((width - lineWidth) / 2);
+    const offsetY = startY + lineIdx * lineHeight;
+
+    let cursorX = offsetX;
+    for (const ch of line) {
+      const glyph = getGlyph(ch);
+      glyph.forEach((rowBits, row) => {
+        for (let col = 0; col < 5; col++) {
+          if (rowBits & (1 << (4 - col))) {
+            const startX = cursorX + col * pixelSize;
+            const startRowY = offsetY + row * pixelSize;
+            for (let py = 0; py < pixelSize; py++) {
+              const y = startRowY + py;
+              if (y < 0 || y >= height) continue;
+              const rowOffset = y * width * channels;
+              for (let px = 0; px < pixelSize; px++) {
+                const x = startX + px;
+                if (x < 0 || x >= width) continue;
+                const idx = rowOffset + x * channels;
+                buffer[idx + 0] = fg.r;
+                buffer[idx + 1] = fg.g;
+                buffer[idx + 2] = fg.b;
+                buffer[idx + 3] = fg.a;
+              }
             }
           }
         }
-      }
-    });
-    cursorX += glyphW + spacing;
-  }
+      });
+      cursorX += glyphW + spacing;
+    }
+  });
 
   return sharp(buffer, {
     raw: {
