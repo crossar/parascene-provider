@@ -5,6 +5,8 @@ import {
 } from './zydeco.llm.js';
 import { imagePoemPrompt } from './zydeco.prompt.js';
 import Jimp from 'jimp';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 function randItem(items) {
 	return items[Math.floor(Math.random() * items.length)];
@@ -32,11 +34,14 @@ async function annotatePoemWithJimp(imageBuffer, poemText) {
 		const blackBlock = new Jimp(width, blockHeight, 0x200020b0);
 		image.composite(blackBlock, 0, blockY);
 
-		// Load default font instead of trying to use bundled font
-		const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE).catch(async () => {
-			// Fallback to smaller font if 32 is unavailable
-			return await Jimp.loadFont(Jimp.FONT_SANS_16_WHITE);
-		});
+		// Load custom font from file
+		const __dirname = dirname(fileURLToPath(import.meta.url));
+		const fontPath = join(
+			__dirname,
+			'../fonts/open-sans/open-sans-32-white/open-sans-32-white.fnt'
+		);
+		const font = await Jimp.loadFont(fontPath);
+
 		image.print(
 			font,
 			0,
