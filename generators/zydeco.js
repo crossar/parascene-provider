@@ -32,7 +32,11 @@ async function annotatePoemWithJimp(imageBuffer, poemText) {
 		const blackBlock = new Jimp(width, blockHeight, 0x200020b0);
 		image.composite(blackBlock, 0, blockY);
 
-		const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+		// Load default font instead of trying to use bundled font
+		const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE).catch(async () => {
+			// Fallback to smaller font if 32 is unavailable
+			return await Jimp.loadFont(Jimp.FONT_SANS_16_WHITE);
+		});
 		image.print(
 			font,
 			0,
