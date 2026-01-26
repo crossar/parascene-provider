@@ -93,6 +93,13 @@ const methodHandlers = {
 
 export default async function handler(req, res) {
 	if (req.method === 'GET') {
+		if (!validateAuth(req)) {
+			return res.status(401).json({
+				error: 'Unauthorized',
+				message: 'Valid API key required. Use Authorization: Bearer <key>',
+			});
+		}
+
 		const capabilities = {
 			status: 'operational',
 			last_check_at: new Date().toISOString(),
