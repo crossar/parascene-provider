@@ -72,6 +72,9 @@ export async function generateFluxImage(args = {}) {
 		width: 1024,
 		height: 1024,
 		prompt: (args.prompt || args.text || '').trim(),
+		color: '#000000',
+		width: 1024,
+		height: 1024,
 	};
 }
 
@@ -109,5 +112,8 @@ export async function generatePoeticImageFlux(args = {}) {
 		...result,
 		buffer: annotated.buffer,
 		description: poemPlusAI.text,
+		color: '#000000',
+		width: 1024,
+		height: 1024,
 	};
 }
