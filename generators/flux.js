@@ -1,6 +1,5 @@
 import { getPoem, annotatePoemWithJimp } from './zydeco.js';
-import { rewritePoemWithOpenAI } from './zydeco.llm';
-import { imagePoemPrompt } from './zydeco.prompt.js';
+import { rewritePoemWithOpenAI } from './zydeco.llm.js';
 
 const { FLUX_API_KEY } = process.env;
 const url = 'https://api.bfl.ai/v1/flux-2-pro';
