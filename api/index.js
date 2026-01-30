@@ -5,6 +5,7 @@ import { generatePoeticImage } from '../generators/zydeco.js';
 import {
 	generateFluxImage,
 	generatePoeticImageFlux,
+	fluxImageEdit,
 } from '../generators/flux.js';
 
 function validateAuth(req) {
@@ -23,6 +24,24 @@ const generationMethods = {
 			'Calls the Black Forest Labs Flux endpoint to generate a 1024x1024 image from a prompt.',
 		credits: 5,
 		fields: {
+			prompt: {
+				label: 'Prompt',
+				type: 'text',
+				required: true,
+			},
+		},
+	},
+	fluxImageEdit: {
+		name: 'Flux 2 Image Edit',
+		description:
+			'Downloads an input image from image_url and sends it to Flux along with your prompt to perform an edit.',
+		credits: 5,
+		fields: {
+			image_url: {
+				label: 'Image URL',
+				type: 'image_url',
+				required: true,
+			},
 			prompt: {
 				label: 'Prompt',
 				type: 'text',
@@ -89,6 +108,7 @@ const methodHandlers = {
 	poeticImage: generatePoeticImage,
 	fluxImage: generateFluxImage,
 	fluxPoeticImage: generatePoeticImageFlux,
+	fluxImageEdit: fluxImageEdit,
 };
 
 export default async function handler(req, res) {

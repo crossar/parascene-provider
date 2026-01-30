@@ -118,6 +118,12 @@ function updateMethodFields() {
 			if (fieldDef.type === 'text') {
 				input = document.createElement('textarea');
 				input.rows = 3;
+			} else if (fieldDef.type === 'url') {
+				input = document.createElement('input');
+				input.type = 'url';
+				input.autocapitalize = 'off';
+				input.autocomplete = 'off';
+				input.spellcheck = false;
 			} else if (fieldDef.type === 'color') {
 				input = document.createElement('input');
 				input.type = 'color';
@@ -128,6 +134,27 @@ function updateMethodFields() {
 			input.id = `field_${fieldName}`;
 			input.placeholder = fieldDef.required ? 'Required' : 'Optional';
 			formGroup.appendChild(input);
+
+			// Nice UX for image_url fields: show a quick preview.
+			if (fieldName === 'image_url') {
+				const preview = document.createElement('img');
+				preview.style.maxWidth = '100%';
+				preview.style.marginTop = '8px';
+				preview.style.display = 'none';
+
+				input.addEventListener('input', () => {
+					const v = input.value.trim();
+					if (!v) {
+						preview.removeAttribute('src');
+						preview.style.display = 'none';
+						return;
+					}
+					preview.src = v;
+					preview.style.display = 'block';
+				});
+
+				formGroup.appendChild(preview);
+			}
 
 			fieldGroup.appendChild(formGroup);
 		}

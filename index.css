@@ -39,6 +39,7 @@ label {
 }
 input[type='text'],
 input[type='password'],
+input[type='url'],
 select,
 textarea {
 	width: 100%;
@@ -161,6 +162,7 @@ pre {
 	}
 	input[type='text'],
 	input[type='password'],
+	input[type='url'],
 	select,
 	textarea {
 		background: #0f172a;
@@ -169,6 +171,7 @@ pre {
 	}
 	input[type='text']::placeholder,
 	input[type='password']::placeholder,
+	input[type='url']::placeholder,
 	textarea::placeholder {
 		color: #64748b;
 	}

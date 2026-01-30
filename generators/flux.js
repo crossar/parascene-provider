@@ -1,11 +1,14 @@
 import { getPoem, annotatePoemWithJimp } from './zydeco.js';
 import { rewritePoemWithOpenAI } from './zydeco.llm.js';
+import sharp from 'sharp';
 
 const { FLUX_API_KEY } = process.env;
 const url = 'https://api.bfl.ai/v1/flux-2-pro';
 
-export async function flux(prompt) {
+async function fluxRequest(payload = {}) {
 	if (!FLUX_API_KEY) throw new Error('FLUX_API_KEY missing');
+
+	const prompt = payload?.prompt;
 	if (!prompt || typeof prompt !== 'string' || !prompt.trim())
 		throw new Error('A prompt string is required');
 
@@ -18,13 +21,8 @@ export async function flux(prompt) {
 			'x-key': FLUX_API_KEY,
 		},
 		body: JSON.stringify({
-			prompt,
-			prompt_upsampling: false,
-			// input_image: 'string',
-			// input_image_2: 'string',
-			seed: 0,
-			width: 1024,
-			height: 1024,
+			...payload,
+			prompt: prompt.trim(),
 		}),
 	});
 	if (!post.ok) throw new Error(await post.text());
@@ -32,7 +30,7 @@ export async function flux(prompt) {
 
 	let pollCount = 0;
 
-	for (;;) {
+	for (; ;) {
 		pollCount++;
 		const poll = await fetch(polling_url, {
 			headers: {
@@ -48,21 +46,43 @@ export async function flux(prompt) {
 			const img = await fetch(j.result.sample);
 			if (!img.ok) throw new Error(await img.text());
 			const buffer = Buffer.from(await img.arrayBuffer());
+			let meta = null;
+			try {
+				meta = await sharp(buffer).metadata();
+			} catch {
+				// ignore metadata failures
+			}
 			const duration = Date.now() - startTime;
 
 			return {
 				buffer,
+				width: typeof meta?.width === 'number' ? meta.width : undefined,
+				height: typeof meta?.height === 'number' ? meta.height : undefined,
+				format: meta?.format,
+				mime: img.headers.get('content-type') || undefined,
 				duration,
 				pollCount,
 				final: jRest,
 				...rest,
 			};
 		}
-		if (status === 'Error' || status === 'Failed')
+		if (status === 'Error' || status === 'Failed') {
 			throw new Error(JSON.stringify(j));
+		}
 
+		console.log('Polling...');
 		await new Promise((r) => setTimeout(r, 400));
 	}
+}
+
+export async function flux(prompt) {
+	return fluxRequest({
+		prompt,
+		prompt_upsampling: false,
+		seed: 0,
+		width: 1024,
+		height: 1024,
+	});
 }
 
 export async function generateFluxImage(args = {}) {
@@ -115,5 +135,55 @@ export async function generatePoeticImageFlux(args = {}) {
 		color: '#000000',
 		width: 1024,
 		height: 1024,
+	};
+}
+
+export async function fluxImageEdit(args = {}) {
+	if (!args || typeof args !== 'object')
+		throw new Error('Arguments object is required');
+
+	const prompt = (args.prompt || args.text || '').trim();
+	if (!prompt) throw new Error('A prompt string is required');
+
+	const image_url = (args.image_url || '').trim();
+	if (!image_url) throw new Error('An image_url is required');
+
+	// Validate URL shape early for clearer errors.
+	try {
+		new URL(image_url);
+	} catch {
+		throw new Error('image_url must be a valid URL');
+	}
+
+	const img = await fetch(image_url);
+	if (!img.ok) throw new Error(`Failed to download image: ${await img.text()}`);
+	const imgBuf = Buffer.from(await img.arrayBuffer());
+
+	// Per BFL docs: input_image supports up to 20MB.
+	const maxBytes = 20 * 1024 * 1024;
+	if (imgBuf.length > maxBytes)
+		throw new Error(
+			`Input image too large: ${imgBuf.length} bytes (max ${maxBytes})`
+		);
+
+	const input_image = imgBuf.toString('base64');
+	const result = await fluxRequest({
+		prompt,
+		input_image,
+		prompt_upsampling: false,
+		seed: 0,
+		output_format: 'png',
+	});
+
+	if (typeof result.width !== 'number' || typeof result.height !== 'number') {
+		// API layer expects numeric dimensions for headers.
+		throw new Error('Unable to determine output image dimensions');
+	}
+
+	return {
+		...result,
+		prompt,
+		image_url,
+		color: '#000000',
 	};
 }
