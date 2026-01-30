@@ -189,13 +189,43 @@ export async function fluxImageEdit(args = {}) {
 
 	const img = await fetch(image_url);
 	if (!img.ok) throw new Error(`Failed to download image: ${await img.text()}`);
-	const imgBuf = Buffer.from(await img.arrayBuffer());
+	let imgBuf = Buffer.from(await img.arrayBuffer());
 
 	// Per BFL docs: input_image supports up to 20MB.
 	const maxBytes = 20 * 1024 * 1024;
 	if (imgBuf.length > maxBytes)
 		throw new Error(
 			`Input image too large: ${imgBuf.length} bytes (max ${maxBytes})`
+		);
+
+	// Prepare for Flux edit: normalize to 1024x1024 without stretching.
+	// This preserves aspect ratio and crops to fill (no bars).
+	// 1024 is a multiple of 16, satisfying FLUX.2 requirements.
+	const meta = await sharp(imgBuf).metadata();
+	if (
+		typeof meta.width === 'number' &&
+		typeof meta.height === 'number' &&
+		(meta.width !== 1024 || meta.height !== 1024)
+	) {
+		log('Normalizing input image for Flux', {
+			from: { width: meta.width, height: meta.height },
+			to: { width: 1024, height: 1024 },
+			mode: 'cover+entropy',
+		});
+
+		imgBuf = await sharp(imgBuf)
+			.resize(1024, 1024, {
+				fit: 'cover',
+				position: 'entropy',
+			})
+			.png()
+			.toBuffer();
+	}
+
+	// Re-check size after optional resize/encode.
+	if (imgBuf.length > maxBytes)
+		throw new Error(
+			`Input image too large after resize: ${imgBuf.length} bytes (max ${maxBytes})`
 		);
 
 	const input_image = imgBuf.toString('base64');
