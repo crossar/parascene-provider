@@ -1,12 +1,6 @@
 import 'dotenv/config';
 import { generateGradientCircle } from '../generators/gradientCircle.js';
 import { generateTextImage } from '../generators/textImage.js';
-import { generatePoeticImage } from '../generators/zydeco.js';
-import {
-	generateFluxImage,
-	generatePoeticImageFlux,
-	fluxImageEdit,
-} from '../generators/flux.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -18,67 +12,6 @@ function validateAuth(req) {
 }
 
 const generationMethods = {
-	fluxImage: {
-		name: 'Flux 2',
-		description:
-			'Calls the Black Forest Labs Flux endpoint to generate a 1024x1024 image from a prompt.',
-		intent: 'image_generate',
-		credits: 5,
-		fields: {
-			prompt: {
-				label: 'Prompt',
-				type: 'text',
-				required: true,
-			},
-		},
-	},
-	fluxImageEdit: {
-		name: 'Flux 2 Image Edit',
-		description:
-			'Downloads an input image from Image URL and sends it to Flux along with your prompt to perform an edit.',
-		intent: 'image_mutate',
-		credits: 8,
-		fields: {
-			image_url: {
-				label: 'Image URL',
-				type: 'image_url',
-				required: true,
-			},
-			prompt: {
-				label: 'Prompt',
-				type: 'text',
-				required: true,
-			},
-		},
-	},
-	fluxPoeticImage: {
-		name: 'Poetic Image (Zydeco + Flux)',
-		description:
-			'Generates a zydeco poem, builds an image prompt, renders with Flux, then overlays the poem at the bottom.',
-		intent: 'image_generate',
-		credits: 5,
-		fields: {
-			style: {
-				label: 'Style',
-				type: 'text',
-				required: false,
-			},
-		},
-	},
-	poeticImage: {
-		name: 'Poetic Image (Zydeco)',
-		description:
-			'Zydeco makes a random poem. Open AI cleans it up. Then OpenAI (Dall-E 3) generates an image from poem.',
-		intent: 'image_generate',
-		credits: 2,
-		fields: {
-			style: {
-				label: 'Style',
-				type: 'text',
-				required: false,
-			},
-		},
-	},
 	gradientCircle: {
 		name: 'Gradient Circle',
 		description:
@@ -111,10 +44,6 @@ const generationMethods = {
 const methodHandlers = {
 	gradientCircle: generateGradientCircle,
 	centeredTextOnWhite: generateTextImage,
-	poeticImage: generatePoeticImage,
-	fluxImage: generateFluxImage,
-	fluxPoeticImage: generatePoeticImageFlux,
-	fluxImageEdit: fluxImageEdit,
 };
 
 export default async function handler(req, res) {
