@@ -13,7 +13,7 @@ function validateAuth(req) {
 
 const generationMethods = {
 	gradientCircle: {
-		name: 'Gradient Circle',
+		name: 'Circle Design',
 		description:
 			'Generates a 1024x1024 image with a gradient background using random colors at each corner and a random colored circle',
 		intent: 'image_generate',
@@ -21,7 +21,7 @@ const generationMethods = {
 		fields: {},
 	},
 	centeredTextOnWhite: {
-		name: 'Centered Text on White',
+		name: 'Text on White Background',
 		description:
 			'Generates a 1024x1024 image with centered text rendered on a white background',
 		intent: 'image_generate',
