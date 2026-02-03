@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { generateGradientCircle } from '../generators/gradientCircle.js';
 import { generateTextImage } from '../generators/textImage.js';
+import generateAnimePixelSticker from '../generators/chibiPixel.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -39,11 +40,20 @@ const generationMethods = {
 			},
 		},
 	},
+	chibiPixel: {
+		name: 'Chibi Pixel Art',
+		description:
+			'Generates a 1024x1024 image with a chibi-style pixel art character',
+		intent: 'image_generate',
+		credits: 0.25,
+		fields: {},
+	},
 };
 
 const methodHandlers = {
 	gradientCircle: generateGradientCircle,
 	centeredTextOnWhite: generateTextImage,
+	chibiPixel: generateAnimePixelSticker,
 };
 
 export default async function handler(req, res) {
