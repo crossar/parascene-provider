@@ -1,6 +1,4 @@
 import 'dotenv/config';
-import { generateGradientCircle } from '../generators/gradientCircle.js';
-import { generateTextImage } from '../generators/textImage.js';
 import generateAnimePixelSticker from '../generators/chibiPixel.js';
 
 function validateAuth(req) {
@@ -13,33 +11,6 @@ function validateAuth(req) {
 }
 
 const generationMethods = {
-	gradientCircle: {
-		name: 'Circle Design',
-		description:
-			'Generates a 1024x1024 image with a gradient background using random colors at each corner and a random colored circle',
-		intent: 'image_generate',
-		credits: 0.25,
-		fields: {},
-	},
-	centeredTextOnWhite: {
-		name: 'Text on White Background',
-		description:
-			'Generates a 1024x1024 image with centered text rendered on a white background',
-		intent: 'image_generate',
-		credits: 0.25,
-		fields: {
-			text: {
-				label: 'Text',
-				type: 'text',
-				required: true,
-			},
-			color: {
-				label: 'Text Color',
-				type: 'color',
-				required: false,
-			},
-		},
-	},
 	chibiPixel: {
 		name: 'Chibi Pixel Art',
 		description:
@@ -51,8 +22,6 @@ const generationMethods = {
 };
 
 const methodHandlers = {
-	gradientCircle: generateGradientCircle,
-	centeredTextOnWhite: generateTextImage,
 	chibiPixel: generateAnimePixelSticker,
 };
 
@@ -137,7 +106,7 @@ export default async function handler(req, res) {
 			res.setHeader('Content-Type', 'image/png');
 			res.setHeader('Content-Length', result.buffer.length);
 			res.setHeader('Cache-Control', 'no-cache');
-			res.setHeader('X-Image-Color', result.color);
+			//res.setHeader('X-Image-Color', result.color);
 			res.setHeader('X-Image-Width', result.width.toString());
 			res.setHeader('X-Image-Height', result.height.toString());
 
