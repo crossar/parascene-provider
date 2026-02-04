@@ -450,7 +450,10 @@ export default async function generatePersonaGen(args = {}) {
 			: Math.floor(Math.random() * 2 ** 32);
 
 	const mode = String(args.mode ?? 'single'); // "single" | "sheet"
-	const bg = typeof args.bg === 'string' ? args.bg : '#191C28';
+	const bg =
+		typeof args.bg === 'string' && /^#[0-9A-Fa-f]{6}$/.test(args.bg)
+			? args.bg
+			: '#191C28';
 
 	// SINGLE MODE: exact output size
 	if (mode === 'single') {
