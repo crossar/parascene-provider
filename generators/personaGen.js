@@ -442,12 +442,11 @@ function generateCharacter(px, rnd) {
 
 export default async function generatePersonaGen(args = {}) {
 	// Truly random per request when seed is omitted
-	const seed =
-		typeof args.seed !== 'undefined'
-			? typeof args.seed === 'number'
-				? args.seed >>> 0
-				: hashStringToSeed(String(args.seed))
-			: Math.floor(Math.random() * 2 ** 32);
+	const seed = args.seed
+		? typeof args.seed === 'number'
+			? args.seed >>> 0
+			: hashStringToSeed(String(args.seed))
+		: Math.floor(Math.random() * 2 ** 32);
 
 	const mode = String(args.mode ?? 'single'); // "single" | "sheet"
 	const bg =
