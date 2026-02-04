@@ -25,7 +25,7 @@ const generationMethods = {
 		name: '2D Sprite Generator',
 		description: 'Generates a simple 2D pixel character sprite',
 		intent: 'image_generate',
-		credits: 0.0,
+		credits: 0.1,
 		fields: {
 			seed: {
 				required: false,
