@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import generateAnimePixelSticker from '../generators/chibiPixel.js';
 import generateSpriteGen from '../generators/spriteGen.js';
+import generatePersonaGen from '../generators/personaGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -39,11 +40,35 @@ const generationMethods = {
 			},
 		},
 	},
+
+	personaGen: {
+		name: 'PersonaGen',
+		description: 'Random code-only pixel character (192x288). No PNG assets.',
+		intent: 'image_generate',
+		credits: 0.12,
+		fields: {
+			seed: {
+				label: 'Seed',
+				required: false,
+				type: 'string',
+				description:
+					'Optional. Same seed = same character. Leave blank for random.',
+			},
+			bg: {
+				label: 'Background Color',
+				required: false,
+				type: 'string',
+				description:
+					'Optional hex color like "#191C28". Leave blank for default.',
+			},
+		},
+	},
 };
 
 const methodHandlers = {
 	chibiPixel: generateAnimePixelSticker,
 	spriteGen: generateSpriteGen,
+	personaGen: generatePersonaGen,
 };
 
 export default async function handler(req, res) {
@@ -127,7 +152,6 @@ export default async function handler(req, res) {
 			res.setHeader('Content-Type', 'image/png');
 			res.setHeader('Content-Length', result.buffer.length);
 			res.setHeader('Cache-Control', 'no-cache');
-			//res.setHeader('X-Image-Color', result.color);
 			res.setHeader('X-Image-Width', result.width.toString());
 			res.setHeader('X-Image-Height', result.height.toString());
 
