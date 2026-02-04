@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import generateAnimePixelSticker from '../generators/chibiPixel.js';
+import generateSpriteGen from '../generators/spriteGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -19,10 +20,30 @@ const generationMethods = {
 		credits: 0.25,
 		fields: {},
 	},
+
+	spriteGen: {
+		name: '2D Sprite Generator',
+		description: 'Generates a simple 2D pixel character sprite',
+		intent: 'image_generate',
+		credits: 0.0,
+		fields: {
+			seed: {
+				required: false,
+				type: 'number',
+				description: 'Seed for deterministic sprite generation',
+			},
+			scale: {
+				required: false,
+				type: 'number',
+				description: 'Pixel scale factor (default 12)',
+			},
+		},
+	},
 };
 
 const methodHandlers = {
 	chibiPixel: generateAnimePixelSticker,
+	spriteGen: generateSpriteGen,
 };
 
 export default async function handler(req, res) {
