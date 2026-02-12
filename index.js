@@ -178,11 +178,28 @@ async function generateImage() {
 	const method = capabilities.methods[methodKey];
 	const args = {};
 
-	// Collect field values
+	// Collect field values (sanitized)
 	for (const [fieldName, fieldDef] of Object.entries(method.fields || {})) {
 		const input = document.getElementById(`field_${fieldName}`);
-		if (input && input.value) {
-			args[fieldName] = input.value;
+		if (!input) continue;
+
+		const raw = String(input.value ?? '').trim();
+		if (!raw) continue;
+
+		// If the field is a number, send a number (and clamp scale)
+		if (fieldDef?.type === 'number') {
+			const n = Number(raw);
+			if (!Number.isFinite(n)) continue;
+
+			if (fieldName === 'scale') {
+				const clamped = Math.max(1, Math.floor(n)); // ✅ prevents 0
+				args[fieldName] = clamped;
+			} else {
+				args[fieldName] = n;
+			}
+		} else {
+			// string fields
+			args[fieldName] = raw;
 		}
 	}
 
@@ -202,14 +219,15 @@ async function generateImage() {
 		});
 
 		if (!response.ok) {
-			const data = await response.json();
-			resultDiv.innerHTML = `<div class="error">Error ${response.status}: ${data.message || data.error}</div>`;
+			const text = await response.text(); // ✅ safe for JSON or plain text
+			resultDiv.innerHTML = `<div class="error">Error ${response.status}: ${text}</div>`;
 			return;
 		}
 
 		// Display the image
 		const blob = await response.blob();
 		const imageUrl = URL.createObjectURL(blob);
+		resultDiv.innerHTML = `<img src="${imageUrl}" alt="Generated" />`;
 
 		const width = response.headers.get('X-Image-Width');
 		const height = response.headers.get('X-Image-Height');
