@@ -2,6 +2,7 @@ import 'dotenv/config';
 import generateAnimePixelSticker from '../generators/chibiPixel.js';
 import generateSpriteGen from '../generators/spriteGen.js';
 import generatePersonaGen from '../generators/personaGen.js';
+import generateEmotionPortrait from '../generators/emotionGen.js'; // ✅ NEW
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -63,13 +64,79 @@ const generationMethods = {
 			},
 		},
 	},
+
+	// ✅ NEW METHOD
+	emotionGen: {
+		name: 'Emotion Portrait Generator',
+		description:
+			'Procedural pixel emotion portrait (base 64x96, scaled to 192x288 by default). No PNG assets.',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			seed: {
+				label: 'Seed',
+				required: false,
+				type: 'string',
+				description:
+					'Optional. Same seed = same portrait. Leave blank for random.',
+			},
+			emotion: {
+				label: 'Emotion',
+				required: false,
+				type: 'string',
+				description:
+					'Optional. One of: rage, shy, smug, crying, sleepy, shocked, determined, unhinged. Leave blank for random.',
+			},
+			scale: {
+				label: 'Scale',
+				required: false,
+				type: 'number',
+				description:
+					'Optional. Pixel scale factor. Default 3 (64x96 → 192x288).',
+			},
+		},
+	},
 };
 
 const methodHandlers = {
 	chibiPixel: generateAnimePixelSticker,
 	spriteGen: generateSpriteGen,
 	personaGen: generatePersonaGen,
+	emotionGen: generateEmotionPortrait, // ✅ NEW
 };
+
+function normalizeArgs(method, args) {
+	// Keep your API flexible: accept seed as string/number and pass clean values
+	const a = { ...(args || {}) };
+
+	// Normalize seed: allow string seeds (e.g., "aiko") without breaking
+	if ('seed' in a && a.seed !== null && a.seed !== undefined && a.seed !== '') {
+		// emotionGen supports string seeds (it hashes internally if non-numeric),
+		// but other gens may expect number; keep type as-is unless it looks numeric.
+		const n = Number(a.seed);
+		if (Number.isFinite(n)) a.seed = n;
+	}
+
+	// Normalize scale
+	if (
+		'scale' in a &&
+		a.scale !== null &&
+		a.scale !== undefined &&
+		a.scale !== ''
+	) {
+		const s = Number(a.scale);
+		if (Number.isFinite(s)) a.scale = s;
+		else delete a.scale;
+	}
+
+	// Normalize emotion to lowercase if present
+	if (method === 'emotionGen' && typeof a.emotion === 'string') {
+		a.emotion = a.emotion.trim().toLowerCase();
+		if (!a.emotion) delete a.emotion;
+	}
+
+	return a;
+}
 
 export default async function handler(req, res) {
 	if (req.method === 'GET') {
@@ -122,7 +189,8 @@ export default async function handler(req, res) {
 			}
 
 			const methodDef = generationMethods[body.method];
-			const args = body.args || {};
+			const rawArgs = body.args || {};
+			const args = normalizeArgs(body.method, rawArgs);
 
 			const fields = methodDef.fields || {};
 			const missingFields = [];
@@ -154,6 +222,13 @@ export default async function handler(req, res) {
 			res.setHeader('Cache-Control', 'no-cache');
 			res.setHeader('X-Image-Width', result.width.toString());
 			res.setHeader('X-Image-Height', result.height.toString());
+
+			// Optional: include helpful meta if your generator returns it
+			if (result.seed !== undefined)
+				res.setHeader('X-Seed', String(result.seed));
+			if (result.emotion) res.setHeader('X-Emotion', String(result.emotion));
+			if (result.accessory)
+				res.setHeader('X-Accessory', String(result.accessory));
 
 			return res.send(result.buffer);
 		} catch (error) {
