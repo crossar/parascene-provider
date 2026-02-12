@@ -489,7 +489,10 @@ export default async function generateEmotionPortrait(args = {}) {
 	const baseH = 96;
 
 	// defaults
-	const scale = Number.isFinite(Number(args.scale)) ? Number(args.scale) : 3;
+	let scale = Number.isFinite(Number(args.scale)) ? Number(args.scale) : 3;
+	scale = Math.floor(scale);
+	if (!Number.isFinite(scale) || scale < 1) scale = 3;
+	if (scale > 20) scale = 20; // optional safety cap
 
 	// seed: allow numbers or strings
 	let seed = args.seed;

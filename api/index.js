@@ -2,7 +2,7 @@ import 'dotenv/config';
 import generateAnimePixelSticker from '../generators/chibiPixel.js';
 import generateSpriteGen from '../generators/spriteGen.js';
 import generatePersonaGen from '../generators/personaGen.js';
-import generateEmotionPortrait from '../generators/emotionGen.js'; // ✅ NEW
+import generateEmotionPortrait from '../generators/emotionGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -65,7 +65,6 @@ const generationMethods = {
 		},
 	},
 
-	// ✅ NEW METHOD
 	emotionGen: {
 		name: 'Emotion Portrait Generator',
 		description:
@@ -102,7 +101,7 @@ const methodHandlers = {
 	chibiPixel: generateAnimePixelSticker,
 	spriteGen: generateSpriteGen,
 	personaGen: generatePersonaGen,
-	emotionGen: generateEmotionPortrait, // ✅ NEW
+	emotionGen: generateEmotionPortrait,
 };
 
 function normalizeArgs(method, args) {
@@ -125,8 +124,12 @@ function normalizeArgs(method, args) {
 		a.scale !== ''
 	) {
 		const s = Number(a.scale);
-		if (Number.isFinite(s)) a.scale = s;
-		else delete a.scale;
+		if (Number.isFinite(s)) {
+			const clamped = Math.max(1, Math.floor(s));
+			a.scale = clamped;
+		} else {
+			delete a.scale;
+		}
 	}
 
 	// Normalize emotion to lowercase if present
