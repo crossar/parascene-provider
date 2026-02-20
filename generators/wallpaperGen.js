@@ -130,14 +130,6 @@ function svgWallpaper({ width, height, seed }) {
 
   ${blobSvgs.join('\n')}
 
-  <g opacity="${(0.1 + rnd() * 0.14).toFixed(3)}">
-    <rect x="${(width * (0.05 + rnd() * 0.15)).toFixed(1)}"
-          y="${(height * (0.05 + rnd() * 0.15)).toFixed(1)}"
-          width="${(width * (0.55 + rnd() * 0.25)).toFixed(1)}"
-          height="${(height * (0.08 + rnd() * 0.08)).toFixed(1)}"
-          rx="${(18 + rnd() * 28).toFixed(1)}"
-          fill="${c4}" />
-  </g>
 
   <rect width="100%" height="100%" filter="url(#texture)" opacity="${textureOpacity.toFixed(
 		3
