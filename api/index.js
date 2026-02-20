@@ -20,7 +20,7 @@ const generationMethods = {
 		description:
 			'Generates a 1024x1024 image with a chibi-style pixel art character',
 		intent: 'image_generate',
-		credits: 0.25,
+		credits: 0.1,
 		fields: {},
 	},
 
@@ -47,7 +47,7 @@ const generationMethods = {
 		name: 'PersonaGen',
 		description: 'Random code-only pixel character (192x288). No PNG assets.',
 		intent: 'image_generate',
-		credits: 0.12,
+		credits: 0.1,
 		fields: {
 			seed: {
 				label: 'Seed',
@@ -103,7 +103,7 @@ const generationMethods = {
 		description:
 			'Generates a procedural abstract wallpaper PNG (random each time).',
 		intent: 'image_generate',
-		credits: 0.05,
+		credits: 0.1,
 		fields: {}, // ✅ hide seed/width/height
 	},
 };
