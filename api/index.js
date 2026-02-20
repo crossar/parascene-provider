@@ -3,6 +3,7 @@ import generateAnimePixelSticker from '../generators/chibiPixel.js';
 import generateSpriteGen from '../generators/spriteGen.js';
 import generatePersonaGen from '../generators/personaGen.js';
 import generateEmotionPortrait from '../generators/emotionGen.js';
+import wallpaperGen from '../generators/wallpaperGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -95,6 +96,16 @@ const generationMethods = {
 			},
 		},
 	},
+
+	// ✅ Wallpaper: no fields shown in the UI (one-click generate)
+	wallpaper: {
+		name: 'Wallpaper Generator',
+		description:
+			'Generates a procedural abstract wallpaper PNG (random each time).',
+		intent: 'image_generate',
+		credits: 0.05,
+		fields: {}, // ✅ hide seed/width/height
+	},
 };
 
 const methodHandlers = {
@@ -102,16 +113,14 @@ const methodHandlers = {
 	spriteGen: generateSpriteGen,
 	personaGen: generatePersonaGen,
 	emotionGen: generateEmotionPortrait,
+	wallpaper: wallpaperGen, // ✅ add handler
 };
 
 function normalizeArgs(method, args) {
-	// Keep your API flexible: accept seed as string/number and pass clean values
 	const a = { ...(args || {}) };
 
-	// Normalize seed: allow string seeds (e.g., "aiko") without breaking
+	// Normalize seed: if numeric-like, convert to number (safe for your other gens)
 	if ('seed' in a && a.seed !== null && a.seed !== undefined && a.seed !== '') {
-		// emotionGen supports string seeds (it hashes internally if non-numeric),
-		// but other gens may expect number; keep type as-is unless it looks numeric.
 		const n = Number(a.seed);
 		if (Number.isFinite(n)) a.seed = n;
 	}
@@ -138,6 +147,7 @@ function normalizeArgs(method, args) {
 		if (!a.emotion) delete a.emotion;
 	}
 
+	// ✅ For wallpaper: do nothing. It should work with empty args.
 	return a;
 }
 
@@ -192,7 +202,7 @@ export default async function handler(req, res) {
 			}
 
 			const methodDef = generationMethods[body.method];
-			const rawArgs = body.args || {};
+			const rawArgs = body.args || {}; // ✅ keep using args
 			const args = normalizeArgs(body.method, rawArgs);
 
 			const fields = methodDef.fields || {};
@@ -220,13 +230,21 @@ export default async function handler(req, res) {
 
 			const result = await generator(args);
 
+			if (!result?.buffer) {
+				return res.status(500).json({
+					error: 'Generator did not return an image buffer',
+					method: body.method,
+					hint: 'Ensure the generator returns { buffer: <Buffer>, width, height, ... }',
+				});
+			}
+
 			res.setHeader('Content-Type', 'image/png');
 			res.setHeader('Content-Length', result.buffer.length);
 			res.setHeader('Cache-Control', 'no-cache');
-			res.setHeader('X-Image-Width', result.width.toString());
-			res.setHeader('X-Image-Height', result.height.toString());
-
-			// Optional: include helpful meta if your generator returns it
+			if (result.width !== undefined)
+				res.setHeader('X-Image-Width', String(result.width));
+			if (result.height !== undefined)
+				res.setHeader('X-Image-Height', String(result.height));
 			if (result.seed !== undefined)
 				res.setHeader('X-Seed', String(result.seed));
 			if (result.emotion) res.setHeader('X-Emotion', String(result.emotion));
