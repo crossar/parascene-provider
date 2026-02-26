@@ -4,6 +4,7 @@ import generateSpriteGen from '../generators/spriteGen.js';
 import generatePersonaGen from '../generators/personaGen.js';
 import generateEmotionPortrait from '../generators/emotionGen.js';
 import wallpaperGen from '../generators/wallpaperGen.js';
+import tileSheetGen from '../generators/tileSheetGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers.authorization;
@@ -97,14 +98,42 @@ const generationMethods = {
 		},
 	},
 
-	// ✅ Wallpaper: no fields shown in the UI (one-click generate)
 	wallpaper: {
 		name: 'Wallpaper Generator',
 		description:
 			'Generates a procedural abstract wallpaper PNG (random each time).',
 		intent: 'image_generate',
 		credits: 0.1,
-		fields: {}, // ✅ hide seed/width/height
+		fields: {},
+	},
+
+	tileSheet: {
+		name: 'Tile Sheet Generator',
+		description:
+			'Generates a 1024x1024 tileset PNG split into an even grid (tiles for 2D games).',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			grid: {
+				label: 'Grid',
+				required: false,
+				type: 'number',
+				description:
+					'Tiles per row/column (must divide 1024). Example: 16 => 64px tiles.',
+			},
+			seed: {
+				label: 'Seed',
+				required: false,
+				type: 'string',
+				description: 'Optional. Same seed = same tileset.',
+			},
+			gridLines: {
+				label: 'Grid Lines',
+				required: false,
+				type: 'number',
+				description: 'Optional. 1 = show grid lines, 0 = off.',
+			},
+		},
 	},
 };
 
@@ -113,7 +142,8 @@ const methodHandlers = {
 	spriteGen: generateSpriteGen,
 	personaGen: generatePersonaGen,
 	emotionGen: generateEmotionPortrait,
-	wallpaper: wallpaperGen, // ✅ add handler
+	wallpaper: wallpaperGen,
+	tileSheet: tileSheetGen,
 };
 
 function normalizeArgs(method, args) {
@@ -147,6 +177,23 @@ function normalizeArgs(method, args) {
 		if (!a.emotion) delete a.emotion;
 	}
 
+	// Normalize grid and gridLines for tileSheetGen
+	if (method === 'tileSheet') {
+		if (
+			'grid' in a &&
+			a.grid !== '' &&
+			a.grid !== null &&
+			a.grid !== undefined
+		) {
+			const g = Number(a.grid);
+			if (Number.isFinite(g)) a.grid = Math.max(1, Math.floor(g));
+			else delete a.grid;
+		}
+		if ('gridLines' in a) {
+			const v = a.gridLines;
+			a.gridLines = v === true || v === 1 || v === '1';
+		}
+	}
 	// ✅ For wallpaper: do nothing. It should work with empty args.
 	return a;
 }
