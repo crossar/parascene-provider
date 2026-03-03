@@ -1,4 +1,3 @@
-// generators/fortuneCookieSvg.js
 import crypto from 'crypto';
 
 function mulberry32(seed) {
@@ -32,38 +31,60 @@ function escXml(str) {
 		.replaceAll("'", '&apos;');
 }
 
-// --- LOTS of fortunes (mix of direct + templated)
 const DIRECT = [
 	'When one door closes, another opens.',
 	'Your future self is quietly rooting for you.',
+	'A small decision today becomes a big shortcut tomorrow.',
 	'You don’t need permission to begin.',
 	'The detour is part of the map.',
 	'Make it 10% better, not perfect.',
-	'Consistency beats intensity.',
+	'A lucky break is just preparation in disguise.',
 	'Your patience is doing invisible work.',
+	'The thing you’re avoiding is the thing that will free you.',
 	'You’re not behind. You’re loading assets.',
+	'An old idea returns with better timing.',
+	'A quiet ‘no’ protects a loud ‘yes’.',
+	'Your next win starts with one loose end.',
 	'Curiosity beats confidence—ask the better question.',
 	'Rest is part of the strategy.',
-	'A small decision today becomes a big shortcut tomorrow.',
-	'An old idea returns with better timing.',
-	'A kind boundary is still a boundary.',
-	'The simplest plan is the one you’ll actually do.',
-	'Finish one small thing. The next door appears.',
-	'Your next win starts with one loose end.',
-	'Your calm is more powerful than your rush.',
-	'A tiny habit is a quiet spell.',
+	'Keep it simple. Then make it beautiful.',
 	'A message arrives when you stop refreshing.',
-	'Do the obvious thing first. Then the clever thing.',
-	'The moment you start, the fog thins out.',
-	'Your work will speak when you stop interrupting it with doubt.',
-	'Small steps count. Even the sneaky ones.',
-	'Your timing is improving.',
-	'You’re allowed to outgrow your old plans.',
-	'The universe rewards follow-through.',
-	'A soft answer unlocks a hard door.',
-	'Bravery can be quiet.',
 	'You’re closer than you think—stop moving the finish line.',
+	'Consistency beats intensity.',
+	'A kind boundary is still a boundary.',
+	'Bravery can be quiet.',
+	'Finish one small thing. The next door appears.',
+	'Small habits are quiet spells.',
 	'Today’s boring work becomes tomorrow’s freedom.',
+	'Your calm is more powerful than your rush.',
+	'Make room for the better version of the plan.',
+	'Say yes to the task you can finish.',
+	'The simplest path is the one you repeat.',
+	'Momentum likes tiny beginnings.',
+	'Do the obvious thing first. Then the clever thing.',
+	'Your timing is improving.',
+	'The answer is smaller than the fear.',
+	'You’re allowed to outgrow your old plans.',
+	'You can restart without making it a crisis.',
+	'A good boundary is an act of kindness.',
+	'Clarity comes after movement.',
+	'One honest conversation can save weeks.',
+	'What you practice becomes your personality.',
+	'Slow progress is still progress.',
+	'Your work will speak when you stop interrupting it with doubt.',
+	'Keep going—your future is buffering.',
+	'Pick the next step, not the whole staircase.',
+	'Energy follows attention.',
+	'Less noise. More signal.',
+	'Your curiosity is a compass.',
+	'You’re building something real.',
+	'A tiny risk beats a big regret.',
+	'Choose consistency over perfection.',
+	'Make the plan easy to do on your worst day.',
+	'Your next idea deserves a second draft.',
+	'You don’t need more time—you need fewer tabs.',
+	'Small steps count. Even the sneaky ones.',
+	'You’re closer than yesterday. That’s science.',
 ];
 
 const POOLS = {
@@ -76,6 +97,8 @@ const POOLS = {
 		'This season,',
 		'During your next decision,',
 		'After you finish one small task,',
+		'Right after you stop forcing it,',
+		'The next time you show up anyway,',
 	],
 	subjects: [
 		'a hidden opportunity',
@@ -86,6 +109,10 @@ const POOLS = {
 		'an unlikely ally',
 		'a delayed message',
 		'a tiny risk',
+		'a simple change',
+		'a brave question',
+		'a fresh option',
+		'a small kindness',
 	],
 	verbs: [
 		'will reveal itself',
@@ -96,6 +123,8 @@ const POOLS = {
 		'will test your courage',
 		'will bring clarity',
 		'will make you laugh',
+		'will unlock momentum',
+		'will quietly work out',
 	],
 	twists: [
 		'if you stay curious.',
@@ -106,19 +135,16 @@ const POOLS = {
 		'when you act gently.',
 		'but only once—notice it.',
 		'without you chasing it.',
+		'when you stop trying to impress imaginary people.',
+		'when you commit to the boring version.',
 	],
 };
 
 function makeFortune(rng) {
-	// 55% direct, 45% templated
 	if (rng() < 0.55) return pick(rng, DIRECT);
-	return `${pick(rng, POOLS.openers)} ${pick(rng, POOLS.subjects)} ${pick(
-		rng,
-		POOLS.verbs
-	)} ${pick(rng, POOLS.twists)}`;
+	return `${pick(rng, POOLS.openers)} ${pick(rng, POOLS.subjects)} ${pick(rng, POOLS.verbs)} ${pick(rng, POOLS.twists)}`;
 }
 
-// Split into 1–3 lines for SVG text
 function wrapText(text, maxCharsPerLine = 28) {
 	const words = text.split(/\s+/);
 	const lines = [];
@@ -142,22 +168,29 @@ export default async function fortuneCookieSvg(args = {}) {
 	const fortune = makeFortune(rng);
 	const lines = wrapText(fortune, 30);
 
-	// Random warm cookie colors
 	const cookieA = pick(rng, ['#E7B980', '#E3B072', '#DDA968', '#E9BE86']);
 	const cookieB = pick(rng, ['#D89C58', '#D49A55', '#C98B4C', '#D59B5C']);
 	const shadow = 'rgba(0,0,0,0.18)';
 
-	// SVG canvas size
 	const W = 1024;
 	const H = 1024;
 
-	// Paper strip position (center)
-	const stripY = 500;
+	// ✅ Dynamic strip sizing based on number of lines
+	const stripX = 220;
+	const stripW = 584;
 
+	const lineStep = 52; // space between lines
+	const padTopBot = 54; // padding inside the strip (top+bottom combined-ish)
+	const stripH = padTopBot + lines.length * lineStep; // grows with lines
+	const stripY = 500 - stripH / 2; // keep centered
+
+	const stripFill = '#fffdf7'; // slightly warm paper
+
+	// Build <text> lines centered in the strip
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${stripY + dy}" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#111">${escXml(
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#111">${escXml(
 				ln
 			)}</text>`;
 		})
@@ -191,7 +224,6 @@ export default async function fortuneCookieSvg(args = {}) {
 
   <!-- Cookie halves -->
   <g filter="url(#softShadow)">
-    <!-- Left cookie -->
     <path d="M180 380
              C160 540, 250 710, 420 760
              C520 790, 590 760, 640 700
@@ -200,7 +232,6 @@ export default async function fortuneCookieSvg(args = {}) {
              C210 335, 190 350, 180 380 Z"
           fill="url(#cookieGradA)"/>
 
-    <!-- Right cookie -->
     <path d="M844 390
              C864 545, 775 715, 602 765
              C502 794, 435 765, 382 705
@@ -209,7 +240,6 @@ export default async function fortuneCookieSvg(args = {}) {
              C815 339, 835 354, 844 390 Z"
           fill="url(#cookieGradB)"/>
 
-    <!-- Cookie texture dots -->
     <g opacity="0.22" fill="#8a5b2b">
       ${Array.from({ length: 70 })
 				.map(() => {
@@ -222,16 +252,16 @@ export default async function fortuneCookieSvg(args = {}) {
     </g>
   </g>
 
-  <!-- Fortune paper strip -->
+  <!-- ✅ Fortune paper strip (dynamic height) -->
   <g filter="url(#softShadow)">
-    <rect x="220" y="450" width="584" height="140" rx="14" fill="#ffffff"/>
-    <rect x="220" y="450" width="584" height="140" rx="14" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="4"/>
+    <rect x="${stripX}" y="${stripY}" width="${stripW}" height="${stripH}" rx="18" fill="${stripFill}"/>
+    <rect x="${stripX}" y="${stripY}" width="${stripW}" height="${stripH}" rx="18" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="4"/>
   </g>
 
   <!-- Fortune text -->
   ${textSvg}
 
-  <!-- Small footer -->
+  <!-- Footer -->
   <text x="512" y="940" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="22" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
