@@ -316,6 +316,10 @@ export default async function fortuneCookie(args = {}) {
   </text>
 </svg>`;
 
+	console.log(
+		`Generated fortune cookie with seed ${seed} and fortune: ${fortune}`
+	);
+
 	return {
 		buffer: await svgToPng1024(svg),
 		// fortune,
