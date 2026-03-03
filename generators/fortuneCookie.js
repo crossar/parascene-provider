@@ -299,15 +299,15 @@ export default async function fortuneCookie(args = {}) {
 	);
 
 	// Load a real font file you ship in your repo
-	const fontPath = path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf');
-	const fontData = fs.readFileSync(fontPath);
+	const regular = path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf');
+	const bold = path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf');
 
 	const r = new Resvg(svg, {
 		fitTo: { mode: 'width', value: 1024 },
 		font: {
-			loadSystemFonts: false, // important on Vercel
-			defaultFontFamily: 'Open Sans', // must match the name below
-			fonts: [{ name: 'Open Sans', data: fontData }],
+			loadSystemFonts: false,
+			fontFiles: [regular, bold],
+			defaultFontFamily: 'Open Sans',
 		},
 	});
 
