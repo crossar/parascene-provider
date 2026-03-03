@@ -8,6 +8,7 @@
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
 	},
 	"dependencies": {
+		"@resvg/resvg-js": "^2.6.2",
 		"canvas": "^3.2.1",
 		"dotenv": "^16.4.5",
 		"jimp": "^0.22.10",

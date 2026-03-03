@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
+import { Resvg } from '@resvg/resvg-js';
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -186,32 +186,6 @@ async function svgToPng1024(svgString) {
 }
 
 export default async function fortuneCookie(args = {}) {
-	const REG_TTF = fs
-		.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf'))
-		.toString('base64');
-
-	const BOLD_TTF = fs
-		.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
-		.toString('base64');
-
-	function fontCss() {
-		return `
-<style>
-@font-face{
-	font-family: OpenSansEmbed;
-	src: url("data:font/ttf;base64,${REG_TTF}") format("truetype");
-	font-weight: 400;
-	font-style: normal;
-}
-@font-face{
-	font-family: OpenSansEmbed;
-	src: url("data:font/ttf;base64,${BOLD_TTF}") format("truetype");
-	font-weight: 700;
-	font-style: normal;
-}
-</style>`;
-	}
-
 	console.log(
 		'Font exists:',
 		fs.existsSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
@@ -257,7 +231,6 @@ export default async function fortuneCookie(args = {}) {
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    ${fontCss()}
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="${shadow}"/>
     </filter>
@@ -316,7 +289,7 @@ export default async function fortuneCookie(args = {}) {
 
   ${textSvg}
 
-  <text x="512" y="940" text-anchor="middle" font-family="OpenSansEmbed" font-size="22" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="Open Sans" font-size="22" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
@@ -325,8 +298,23 @@ export default async function fortuneCookie(args = {}) {
 		`Generated fortune cookie with seed ${seed} and fortune: ${fortune}`
 	);
 
+	// Load a real font file you ship in your repo
+	const fontPath = path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf');
+	const fontData = fs.readFileSync(fontPath);
+
+	const r = new Resvg(svg, {
+		fitTo: { mode: 'width', value: 1024 },
+		font: {
+			loadSystemFonts: false, // important on Vercel
+			defaultFontFamily: 'Open Sans', // must match the name below
+			fonts: [{ name: 'Open Sans', data: fontData }],
+		},
+	});
+
+	const png = r.render().asPng();
+
 	return {
-		buffer: await svgToPng1024(svg),
+		buffer: Buffer.from(png),
 		// fortune,
 		seed,
 		width: W,
