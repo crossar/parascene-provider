@@ -29,6 +29,11 @@ function fontCss() {
   </style>`;
 }
 
+console.log(
+	'Font exists:',
+	fs.existsSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
+);
+
 function mulberry32(seed) {
 	let t = seed >>> 0;
 	return function () {
@@ -311,7 +316,7 @@ export default async function fortuneCookie(args = {}) {
 
   ${textSvg}
 
-  <text x="512" y="940" text-anchor="middle" font-family="${FONT_STACK}" font-size="22" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="OpenSansEmbed" font-size="22" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
