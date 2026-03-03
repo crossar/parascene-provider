@@ -3,37 +3,6 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-const REG_TTF = fs
-	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf'))
-	.toString('base64');
-
-const BOLD_TTF = fs
-	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
-	.toString('base64');
-
-function fontCss() {
-	return `
-  <style>
-    @font-face{
-      font-family: OpenSansEmbed;
-      src: url("data:font/ttf;base64,${REG_TTF}") format("truetype");
-      font-weight: 400;
-      font-style: normal;
-    }
-    @font-face{
-      font-family: OpenSansEmbed;
-      src: url("data:font/ttf;base64,${BOLD_TTF}") format("truetype");
-      font-weight: 700;
-      font-style: normal;
-    }
-  </style>`;
-}
-
-console.log(
-	'Font exists:',
-	fs.existsSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
-);
-
 function mulberry32(seed) {
 	let t = seed >>> 0;
 	return function () {
@@ -217,6 +186,37 @@ async function svgToPng1024(svgString) {
 }
 
 export default async function fortuneCookie(args = {}) {
+	const REG_TTF = fs
+		.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf'))
+		.toString('base64');
+
+	const BOLD_TTF = fs
+		.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
+		.toString('base64');
+
+	function fontCss() {
+		return `
+<style>
+@font-face{
+	font-family: OpenSansEmbed;
+	src: url("data:font/ttf;base64,${REG_TTF}") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face{
+	font-family: OpenSansEmbed;
+	src: url("data:font/ttf;base64,${BOLD_TTF}") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+}
+</style>`;
+	}
+
+	console.log(
+		'Font exists:',
+		fs.existsSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
+	);
+
 	const seed = seedToInt(args.seed);
 	const rng = mulberry32(seed);
 
