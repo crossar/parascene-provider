@@ -31,60 +31,65 @@ function escXml(str) {
 		.replaceAll("'", '&apos;');
 }
 
+// ✅ Normalize punctuation so mobile fonts don’t choke
+function normalizeText(s) {
+	return String(s)
+		.replaceAll('’', "'")
+		.replaceAll('“', '"')
+		.replaceAll('”', '"')
+		.replaceAll('—', '-')
+		.replaceAll('–', '-');
+}
+
+// ✅ Bigger quote list
 const DIRECT = [
 	'When one door closes, another opens.',
 	'Your future self is quietly rooting for you.',
 	'A small decision today becomes a big shortcut tomorrow.',
-	'You don’t need permission to begin.',
+	"You don't need permission to begin.",
 	'The detour is part of the map.',
 	'Make it 10% better, not perfect.',
 	'A lucky break is just preparation in disguise.',
 	'Your patience is doing invisible work.',
-	'The thing you’re avoiding is the thing that will free you.',
-	'You’re not behind. You’re loading assets.',
+	"The thing you're avoiding is the thing that will free you.",
+	"You're not behind. You're loading assets.",
 	'An old idea returns with better timing.',
-	'A quiet ‘no’ protects a loud ‘yes’.',
+	"A quiet 'no' protects a loud 'yes'.",
 	'Your next win starts with one loose end.',
-	'Curiosity beats confidence—ask the better question.',
+	'Curiosity beats confidence - ask the better question.',
 	'Rest is part of the strategy.',
 	'Keep it simple. Then make it beautiful.',
 	'A message arrives when you stop refreshing.',
-	'You’re closer than you think—stop moving the finish line.',
+	"You're closer than you think - stop moving the finish line.",
 	'Consistency beats intensity.',
 	'A kind boundary is still a boundary.',
 	'Bravery can be quiet.',
 	'Finish one small thing. The next door appears.',
 	'Small habits are quiet spells.',
-	'Today’s boring work becomes tomorrow’s freedom.',
+	"Today's boring work becomes tomorrow's freedom.",
 	'Your calm is more powerful than your rush.',
 	'Make room for the better version of the plan.',
 	'Say yes to the task you can finish.',
-	'The simplest path is the one you repeat.',
 	'Momentum likes tiny beginnings.',
 	'Do the obvious thing first. Then the clever thing.',
 	'Your timing is improving.',
 	'The answer is smaller than the fear.',
-	'You’re allowed to outgrow your old plans.',
+	"You're allowed to outgrow your old plans.",
 	'You can restart without making it a crisis.',
-	'A good boundary is an act of kindness.',
 	'Clarity comes after movement.',
 	'One honest conversation can save weeks.',
-	'What you practice becomes your personality.',
 	'Slow progress is still progress.',
-	'Your work will speak when you stop interrupting it with doubt.',
-	'Keep going—your future is buffering.',
 	'Pick the next step, not the whole staircase.',
 	'Energy follows attention.',
 	'Less noise. More signal.',
 	'Your curiosity is a compass.',
-	'You’re building something real.',
+	"You're building something real.",
 	'A tiny risk beats a big regret.',
 	'Choose consistency over perfection.',
 	'Make the plan easy to do on your worst day.',
 	'Your next idea deserves a second draft.',
-	'You don’t need more time—you need fewer tabs.',
+	"You don't need more time - you need fewer tabs.",
 	'Small steps count. Even the sneaky ones.',
-	'You’re closer than yesterday. That’s science.',
 ];
 
 const POOLS = {
@@ -133,7 +138,7 @@ const POOLS = {
 		'when you choose the simpler option.',
 		'after you ask for help.',
 		'when you act gently.',
-		'but only once—notice it.',
+		'but only once - notice it.',
 		'without you chasing it.',
 		'when you stop trying to impress imaginary people.',
 		'when you commit to the boring version.',
@@ -141,8 +146,12 @@ const POOLS = {
 };
 
 function makeFortune(rng) {
-	if (rng() < 0.55) return pick(rng, DIRECT);
-	return `${pick(rng, POOLS.openers)} ${pick(rng, POOLS.subjects)} ${pick(rng, POOLS.verbs)} ${pick(rng, POOLS.twists)}`;
+	// ✅ More templated variety
+	if (rng() < 0.35) return pick(rng, DIRECT);
+	return `${pick(rng, POOLS.openers)} ${pick(rng, POOLS.subjects)} ${pick(
+		rng,
+		POOLS.verbs
+	)} ${pick(rng, POOLS.twists)}`;
 }
 
 function wrapText(text, maxCharsPerLine = 28) {
@@ -165,7 +174,7 @@ export default async function fortuneCookieSvg(args = {}) {
 	const seed = seedToInt(args.seed);
 	const rng = mulberry32(seed);
 
-	const fortune = makeFortune(rng);
+	const fortune = normalizeText(makeFortune(rng));
 	const lines = wrapText(fortune, 30);
 
 	const cookieA = pick(rng, ['#E7B980', '#E3B072', '#DDA968', '#E9BE86']);
@@ -175,22 +184,25 @@ export default async function fortuneCookieSvg(args = {}) {
 	const W = 1024;
 	const H = 1024;
 
+	// ✅ WebView-safe font stack (fixes □□□□ on mobile)
+	const FONT_STACK =
+		"system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,'Noto Sans','Liberation Sans',sans-serif";
+
 	// ✅ Dynamic strip sizing based on number of lines
 	const stripX = 220;
 	const stripW = 584;
 
-	const lineStep = 52; // space between lines
-	const padTopBot = 54; // padding inside the strip (top+bottom combined-ish)
-	const stripH = padTopBot + lines.length * lineStep; // grows with lines
-	const stripY = 500 - stripH / 2; // keep centered
+	const lineStep = 52;
+	const padTopBot = 54;
+	const stripH = padTopBot + lines.length * lineStep;
+	const stripY = 500 - stripH / 2;
 
-	const stripFill = '#fffdf7'; // slightly warm paper
+	const stripFill = '#fffdf7';
 
-	// Build <text> lines centered in the strip
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#111">${escXml(
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${FONT_STACK}" font-size="42" font-weight="700" fill="#111">${escXml(
 				ln
 			)}</text>`;
 		})
@@ -219,10 +231,8 @@ export default async function fortuneCookieSvg(args = {}) {
     </radialGradient>
   </defs>
 
-  <!-- Background -->
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
 
-  <!-- Cookie halves -->
   <g filter="url(#softShadow)">
     <path d="M180 380
              C160 540, 250 710, 420 760
@@ -252,26 +262,17 @@ export default async function fortuneCookieSvg(args = {}) {
     </g>
   </g>
 
-  <!-- ✅ Fortune paper strip (dynamic height) -->
   <g filter="url(#softShadow)">
     <rect x="${stripX}" y="${stripY}" width="${stripW}" height="${stripH}" rx="18" fill="${stripFill}"/>
     <rect x="${stripX}" y="${stripY}" width="${stripW}" height="${stripH}" rx="18" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="4"/>
   </g>
 
-  <!-- Fortune text -->
   ${textSvg}
 
-  <!-- Footer -->
-  <text x="512" y="940" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="22" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="${FONT_STACK}" font-size="22" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
 
-	return {
-		svg,
-		fortune,
-		seed,
-		width: W,
-		height: H,
-	};
+	return { svg, fortune, seed, width: W, height: H };
 }
