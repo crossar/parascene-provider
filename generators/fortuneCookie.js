@@ -3,28 +3,28 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-const REG_WOFF2 = fs
-	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.woff2'))
+const REG_TTF = fs
+	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf'))
 	.toString('base64');
 
-const BOLD_WOFF2 = fs
-	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.woff2'))
+const BOLD_TTF = fs
+	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
 	.toString('base64');
 
 function fontCss() {
 	return `
   <style>
     @font-face{
-      font-family:'OpenSansEmbed';
-      src:url(data:font/woff2;base64,${REG_WOFF2}) format('woff2');
-      font-weight:400;
-      font-style:normal;
+      font-family: OpenSansEmbed;
+      src: url("data:font/ttf;base64,${REG_TTF}") format("truetype");
+      font-weight: 400;
+      font-style: normal;
     }
     @font-face{
-      font-family:'OpenSansEmbed';
-      src:url(data:font/woff2;base64,${BOLD_WOFF2}) format('woff2');
-      font-weight:700;
-      font-style:normal;
+      font-family: OpenSansEmbed;
+      src: url("data:font/ttf;base64,${BOLD_TTF}") format("truetype");
+      font-weight: 700;
+      font-style: normal;
     }
   </style>`;
 }
