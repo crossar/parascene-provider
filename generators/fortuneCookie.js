@@ -1,5 +1,33 @@
 import crypto from 'crypto';
 import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+
+const REG_WOFF2 = fs
+	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Regular.woff2'))
+	.toString('base64');
+
+const BOLD_WOFF2 = fs
+	.readFileSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.woff2'))
+	.toString('base64');
+
+function fontCss() {
+	return `
+  <style>
+    @font-face{
+      font-family:'OpenSansEmbed';
+      src:url(data:font/woff2;base64,${REG_WOFF2}) format('woff2');
+      font-weight:400;
+      font-style:normal;
+    }
+    @font-face{
+      font-family:'OpenSansEmbed';
+      src:url(data:font/woff2;base64,${BOLD_WOFF2}) format('woff2');
+      font-weight:700;
+      font-style:normal;
+    }
+  </style>`;
+}
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -199,7 +227,7 @@ export default async function fortuneCookie(args = {}) {
 
 	// ✅ WebView-safe font stack (fixes □□□□ on mobile)
 	const FONT_STACK =
-		"system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,'Noto Sans','Liberation Sans',sans-serif";
+		'OpenSansEmbed, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
 
 	// ✅ Dynamic strip sizing based on number of lines
 	const stripX = 220;
@@ -224,6 +252,7 @@ export default async function fortuneCookie(args = {}) {
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
+    ${fontCss()}
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="${shadow}"/>
     </filter>
