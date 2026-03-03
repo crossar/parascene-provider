@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -170,7 +171,19 @@ function wrapText(text, maxCharsPerLine = 28) {
 	return lines.slice(0, 3);
 }
 
-export default async function fortuneCookieSvg(args = {}) {
+async function svgToPng1024(svgString) {
+	const svgBuffer = Buffer.from(svgString, 'utf8');
+
+	return await sharp(svgBuffer, {
+		density: 144, // helps text/curves look crisp; not required but nice
+	})
+		// ensure the rasterization target size is exactly 1024x1024
+		.resize(1024, 1024, { fit: 'fill' })
+		.png({ compressionLevel: 9, adaptiveFiltering: true })
+		.toBuffer();
+}
+
+export default async function fortuneCookie(args = {}) {
 	const seed = seedToInt(args.seed);
 	const rng = mulberry32(seed);
 
@@ -274,5 +287,11 @@ export default async function fortuneCookieSvg(args = {}) {
   </text>
 </svg>`;
 
-	return { svg, fortune, seed, width: W, height: H };
+	return {
+		buffer: await svgToPng1024(svg),
+		// fortune,
+		seed,
+		width: W,
+		height: H,
+	};
 }

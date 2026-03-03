@@ -5,6 +5,7 @@ import generatePersonaGen from '../generators/personaGen.js';
 import generateEmotionPortrait from '../generators/emotionGen.js';
 import wallpaperGen from '../generators/wallpaperGen.js';
 import tileSheetGen from '../generators/tileSheetGen.js';
+import fortuneCookie from '../generators/fortuneCookie.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -97,11 +98,9 @@ const generationMethods = {
 		},
 	},
 
-	// ✅ NEW (no canvas, no assets): SVG “fortune cookie image”
-	fortuneCookieSvg: {
-		name: 'Fortune Cookie (SVG)',
-		description:
-			'Generates a fortune cookie image as SVG (no canvas, no assets, no inputs).',
+	fortuneCookie: {
+		name: 'Fortune Cookie',
+		description: 'Generates a fortune cookie image.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {},
@@ -115,14 +114,7 @@ const methodHandlers = {
 	emotionGen: generateEmotionPortrait,
 	wallpaper: wallpaperGen,
 	tileSheet: tileSheetGen,
-
-	// ✅ Lazy-load SVG generator
-	fortuneCookieSvg: async (args) => {
-		const mod = await import(
-			new URL('../generators/fortuneCookieSvg.js', import.meta.url)
-		);
-		return mod.default(args);
-	},
+	fortuneCookie,
 };
 
 function normalizeArgs(method, args) {
@@ -214,21 +206,6 @@ export default async function handler(req, res) {
 
 		const args = normalizeArgs(body.method, body.args || {});
 		const result = await generator(args);
-
-		// ✅ SVG OUTPUT (no canvas)
-		if (result?.svg) {
-			res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-cache');
-
-			if (result.width !== undefined)
-				res.setHeader('X-Image-Width', String(result.width));
-			if (result.height !== undefined)
-				res.setHeader('X-Image-Height', String(result.height));
-			if (result.seed !== undefined)
-				res.setHeader('X-Seed', String(result.seed));
-
-			return res.status(200).send(result.svg);
-		}
 
 		// ✅ PNG OUTPUT (existing generators)
 		if (result?.buffer) {
