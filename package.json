@@ -8,6 +8,7 @@
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
 	},
 	"dependencies": {
+		"canvas": "^3.2.1",
 		"dotenv": "^16.4.5",
 		"jimp": "^0.22.10",
 		"sharp": "^0.34.5"

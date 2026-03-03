@@ -7,10 +7,8 @@ import wallpaperGen from '../generators/wallpaperGen.js';
 import tileSheetGen from '../generators/tileSheetGen.js';
 
 function validateAuth(req) {
-	const authHeader = req.headers.authorization;
-	if (!authHeader || !authHeader.startsWith('Bearer ')) {
-		return false;
-	}
+	const authHeader = req.headers?.authorization;
+	if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
 	const token = authHeader.slice(7);
 	return token === process.env.PARASCENE_API_KEY;
 }
@@ -32,11 +30,13 @@ const generationMethods = {
 		credits: 0.1,
 		fields: {
 			seed: {
+				label: 'Seed',
 				required: false,
 				type: 'number',
 				description: 'Seed for deterministic sprite generation',
 			},
 			scale: {
+				label: 'Scale',
 				required: false,
 				type: 'number',
 				description: 'Pixel scale factor (default 12)',
@@ -54,54 +54,32 @@ const generationMethods = {
 				label: 'Seed',
 				required: false,
 				type: 'string',
-				description:
-					'Optional. Same seed = same character. Leave blank for random.',
+				description: 'Optional. Same seed = same character.',
 			},
 			bg: {
 				label: 'Background Color',
 				required: false,
 				type: 'string',
-				description:
-					'Optional hex color like "#191C28". Leave blank for default.',
+				description: 'Optional hex color like "#191C28".',
 			},
 		},
 	},
 
 	emotionGen: {
 		name: 'Emotion Portrait Generator',
-		description:
-			'Procedural pixel emotion portrait (base 64x96, scaled to 192x288 by default). No PNG assets.',
+		description: 'Procedural pixel emotion portrait.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {
-			seed: {
-				label: 'Seed',
-				required: false,
-				type: 'string',
-				description:
-					'Optional. Same seed = same portrait. Leave blank for random.',
-			},
-			emotion: {
-				label: 'Emotion',
-				required: false,
-				type: 'string',
-				description:
-					'Optional. One of: rage, shy, smug, crying, sleepy, shocked, determined, unhinged. Leave blank for random.',
-			},
-			scale: {
-				label: 'Scale',
-				required: false,
-				type: 'number',
-				description:
-					'Optional. Pixel scale factor. Default 3 (64x96 → 192x288).',
-			},
+			seed: { label: 'Seed', required: false, type: 'string' },
+			emotion: { label: 'Emotion', required: false, type: 'string' },
+			scale: { label: 'Scale', required: false, type: 'number' },
 		},
 	},
 
 	wallpaper: {
 		name: 'Wallpaper Generator',
-		description:
-			'Generates a procedural abstract wallpaper PNG (random each time).',
+		description: 'Generates a procedural abstract wallpaper PNG.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {},
@@ -109,31 +87,24 @@ const generationMethods = {
 
 	tileSheet: {
 		name: 'Tile Sheet Generator',
-		description:
-			'Generates a 1024x1024 tileset PNG split into an even grid (tiles for 2D games).',
+		description: 'Generates a 1024x1024 tileset PNG.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {
-			grid: {
-				label: 'Grid',
-				required: false,
-				type: 'number',
-				description:
-					'Tiles per row/column (must divide 1024). Example: 16 => 64px tiles.',
-			},
-			seed: {
-				label: 'Seed',
-				required: false,
-				type: 'string',
-				description: 'Optional. Same seed = same tileset.',
-			},
-			gridLines: {
-				label: 'Grid Lines',
-				required: false,
-				type: 'number',
-				description: 'Optional. 1 = show grid lines, 0 = off.',
-			},
+			grid: { label: 'Grid', required: false, type: 'number' },
+			seed: { label: 'Seed', required: false, type: 'string' },
+			gridLines: { label: 'Grid Lines', required: false, type: 'number' },
 		},
+	},
+
+	// ✅ NEW (no canvas, no assets): SVG “fortune cookie image”
+	fortuneCookieSvg: {
+		name: 'Fortune Cookie (SVG)',
+		description:
+			'Generates a fortune cookie image as SVG (no canvas, no assets, no inputs).',
+		intent: 'image_generate',
+		credits: 0.03,
+		fields: {},
 	},
 };
 
@@ -144,12 +115,20 @@ const methodHandlers = {
 	emotionGen: generateEmotionPortrait,
 	wallpaper: wallpaperGen,
 	tileSheet: tileSheetGen,
+
+	// ✅ Lazy-load SVG generator
+	fortuneCookieSvg: async (args) => {
+		const mod = await import(
+			new URL('../generators/fortuneCookieSvg.js', import.meta.url)
+		);
+		return mod.default(args);
+	},
 };
 
 function normalizeArgs(method, args) {
 	const a = { ...(args || {}) };
 
-	// Normalize seed: if numeric-like, convert to number (safe for your other gens)
+	// Normalize seed
 	if ('seed' in a && a.seed !== null && a.seed !== undefined && a.seed !== '') {
 		const n = Number(a.seed);
 		if (Number.isFinite(n)) a.seed = n;
@@ -163,21 +142,17 @@ function normalizeArgs(method, args) {
 		a.scale !== ''
 	) {
 		const s = Number(a.scale);
-		if (Number.isFinite(s)) {
-			const clamped = Math.max(1, Math.floor(s));
-			a.scale = clamped;
-		} else {
-			delete a.scale;
-		}
+		if (Number.isFinite(s)) a.scale = Math.max(1, Math.floor(s));
+		else delete a.scale;
 	}
 
-	// Normalize emotion to lowercase if present
+	// Normalize emotion
 	if (method === 'emotionGen' && typeof a.emotion === 'string') {
 		a.emotion = a.emotion.trim().toLowerCase();
 		if (!a.emotion) delete a.emotion;
 	}
 
-	// Normalize grid and gridLines for tileSheetGen
+	// Normalize tileSheet options
 	if (method === 'tileSheet') {
 		if (
 			'grid' in a &&
@@ -194,122 +169,94 @@ function normalizeArgs(method, args) {
 			a.gridLines = v === true || v === 1 || v === '1';
 		}
 	}
-	// ✅ For wallpaper: do nothing. It should work with empty args.
+
 	return a;
 }
 
 export default async function handler(req, res) {
-	if (req.method === 'GET') {
+	try {
 		if (!validateAuth(req)) {
 			return res.status(401).json({
 				error: 'Unauthorized',
-				message: 'Valid API key required. Use Authorization: Bearer <key>',
+				message: 'Valid API key required.',
 			});
 		}
 
-		const capabilities = {
-			status: 'operational',
-			last_check_at: new Date().toISOString(),
-			methods: generationMethods,
-		};
-		return res.status(200).json(capabilities);
-	}
-
-	if (req.method === 'POST') {
-		if (!validateAuth(req)) {
-			return res.status(401).json({
-				error: 'Unauthorized',
-				message: 'Valid API key required. Use Authorization: Bearer <key>',
+		if (req.method === 'GET') {
+			return res.status(200).json({
+				status: 'operational',
+				last_check_at: new Date().toISOString(),
+				methods: generationMethods,
 			});
 		}
 
-		try {
-			let body;
-			try {
-				body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-			} catch (parseError) {
-				return res.status(400).json({
-					error: 'Invalid JSON in request body',
-					message: parseError.message,
-				});
-			}
+		if (req.method !== 'POST') {
+			return res.status(405).json({
+				error: 'Method not allowed. Use GET or POST.',
+			});
+		}
 
-			if (!body.method) {
-				return res.status(400).json({
-					error: 'Missing required field: method',
-					available_methods: Object.keys(generationMethods),
-				});
-			}
+		const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
-			if (!generationMethods[body.method]) {
-				return res.status(400).json({
-					error: `Unknown generation method: ${body.method}`,
-					available_methods: Object.keys(generationMethods),
-				});
-			}
+		if (!body?.method || !generationMethods[body.method]) {
+			return res.status(400).json({
+				error: 'Unknown generation method',
+				available_methods: Object.keys(generationMethods),
+			});
+		}
 
-			const methodDef = generationMethods[body.method];
-			const rawArgs = body.args || {}; // ✅ keep using args
-			const args = normalizeArgs(body.method, rawArgs);
+		const generator = methodHandlers[body.method];
+		if (!generator) {
+			return res.status(500).json({
+				error: `No handler registered for method: ${body.method}`,
+			});
+		}
 
-			const fields = methodDef.fields || {};
-			const missingFields = [];
-			for (const [fieldName, fieldDef] of Object.entries(fields)) {
-				if (fieldDef.required && !(fieldName in args)) {
-					missingFields.push(fieldName);
-				}
-			}
+		const args = normalizeArgs(body.method, body.args || {});
+		const result = await generator(args);
 
-			if (missingFields.length > 0) {
-				return res.status(400).json({
-					error: `Missing required arguments: ${missingFields.join(', ')}`,
-					method: body.method,
-					missing_fields: missingFields,
-				});
-			}
-
-			const generator = methodHandlers[body.method];
-			if (!generator) {
-				return res.status(500).json({
-					error: `No handler registered for method: ${body.method}`,
-				});
-			}
-
-			const result = await generator(args);
-
-			if (!result?.buffer) {
-				return res.status(500).json({
-					error: 'Generator did not return an image buffer',
-					method: body.method,
-					hint: 'Ensure the generator returns { buffer: <Buffer>, width, height, ... }',
-				});
-			}
-
-			res.setHeader('Content-Type', 'image/png');
-			res.setHeader('Content-Length', result.buffer.length);
+		// ✅ SVG OUTPUT (no canvas)
+		if (result?.svg) {
+			res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
 			res.setHeader('Cache-Control', 'no-cache');
+
 			if (result.width !== undefined)
 				res.setHeader('X-Image-Width', String(result.width));
 			if (result.height !== undefined)
 				res.setHeader('X-Image-Height', String(result.height));
 			if (result.seed !== undefined)
 				res.setHeader('X-Seed', String(result.seed));
-			if (result.emotion) res.setHeader('X-Emotion', String(result.emotion));
-			if (result.accessory)
-				res.setHeader('X-Accessory', String(result.accessory));
+
+			return res.status(200).send(result.svg);
+		}
+
+		// ✅ PNG OUTPUT (existing generators)
+		if (result?.buffer) {
+			res.setHeader('Content-Type', 'image/png');
+			res.setHeader('Content-Length', result.buffer.length);
+			res.setHeader('Cache-Control', 'no-cache');
+
+			if (result.width !== undefined)
+				res.setHeader('X-Image-Width', String(result.width));
+			if (result.height !== undefined)
+				res.setHeader('X-Image-Height', String(result.height));
+			if (result.seed !== undefined)
+				res.setHeader('X-Seed', String(result.seed));
 
 			return res.send(result.buffer);
-		} catch (error) {
-			console.error('Error generating image:', error);
-			return res.status(500).json({
-				error: 'Failed to generate image',
-				message: error.message,
-			});
 		}
-	}
 
-	return res.status(405).json({
-		error:
-			'Method not allowed. Use GET for capabilities or POST for generation.',
-	});
+		// JSON fallback
+		return res.status(200).json({
+			status: 'ok',
+			method: body.method,
+			result,
+		});
+	} catch (error) {
+		console.error('API handler error:', error);
+		return res.status(500).json({
+			error: 'Server error',
+			message: error?.message || String(error),
+		});
+	}
 }
