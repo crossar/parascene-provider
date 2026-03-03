@@ -103,7 +103,7 @@ const generationMethods = {
 		description:
 			'Generates a fortune cookie image as SVG (no canvas, no assets, no inputs).',
 		intent: 'image_generate',
-		credits: 0.03,
+		credits: 0.1,
 		fields: {},
 	},
 };
