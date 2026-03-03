@@ -205,8 +205,7 @@ export default async function fortuneCookie(args = {}) {
 	const H = 1024;
 
 	// ✅ WebView-safe font stack (fixes □□□□ on mobile)
-	const FONT_STACK =
-		'OpenSansEmbed, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+	const FONT_STACK = 'Open Sans';
 
 	// ✅ Dynamic strip sizing based on number of lines
 	const stripX = 220;
@@ -222,9 +221,9 @@ export default async function fortuneCookie(args = {}) {
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${FONT_STACK}" font-size="42" font-weight="700" fill="#111">${escXml(
-				ln
-			)}</text>`;
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${FONT_STACK}"
+				font-size="26" font-weight="700" fill="#111"
+			>${escXml(ln)}</text>`;
 		})
 		.join('\n');
 
@@ -289,7 +288,7 @@ export default async function fortuneCookie(args = {}) {
 
   ${textSvg}
 
-  <text x="512" y="940" text-anchor="middle" font-family="Open Sans" font-size="22" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="Open Sans" font-size="2" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
