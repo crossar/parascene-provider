@@ -89,7 +89,8 @@ const generationMethods = {
 
 	abstract: {
 		name: 'Abstract Generator',
-		description: 'Generates a soft abstract blob-style wallpaper.',
+		description:
+			'Generates vibrant abstract wallpapers with layered blobs, glowing gradients, organic shapes, and varied visual styles.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {
@@ -111,9 +112,15 @@ const generationMethods = {
 				type: 'string',
 				description: 'png or svg (default png)',
 			},
+			style: {
+				label: 'Style',
+				required: false,
+				type: 'string',
+				description:
+					'Optional style: soft, bold, dreamy, neon, dark, candy, minimal',
+			},
 		},
 	},
-
 	tileSheet: {
 		name: 'Tile Sheet Generator',
 		description: 'Generates a 1024x1024 tileset PNG.',
