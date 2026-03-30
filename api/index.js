@@ -209,6 +209,12 @@ function normalizeArgs(method, args) {
 		if (!a.emotion) delete a.emotion;
 	}
 
+	// Normalize style
+	if (typeof a.style === 'string') {
+		a.style = a.style.trim().toLowerCase();
+		if (!a.style) delete a.style;
+	}
+
 	// Normalize tileSheet options
 	if (method === 'tileSheet') {
 		if (
