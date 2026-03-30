@@ -6,6 +6,7 @@ import generateEmotionPortrait from '../generators/emotionGen.js';
 import wallpaperGen from '../generators/wallpaperGen.js';
 import tileSheetGen from '../generators/tileSheetGen.js';
 import fortuneCookie from '../generators/fortuneCookie.js';
+import abstractGen from '../generators/abstractGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -86,6 +87,33 @@ const generationMethods = {
 		fields: {},
 	},
 
+	abstract: {
+		name: 'Abstract Generator',
+		description: 'Generates a soft abstract blob-style wallpaper.',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			width: {
+				label: 'Width',
+				required: false,
+				type: 'number',
+				description: 'Output width in pixels (default 1024)',
+			},
+			height: {
+				label: 'Height',
+				required: false,
+				type: 'number',
+				description: 'Output height in pixels (default 1024)',
+			},
+			format: {
+				label: 'Format',
+				required: false,
+				type: 'string',
+				description: 'png or svg (default png)',
+			},
+		},
+	},
+
 	tileSheet: {
 		name: 'Tile Sheet Generator',
 		description: 'Generates a 1024x1024 tileset PNG.',
@@ -113,6 +141,7 @@ const methodHandlers = {
 	personaGen: generatePersonaGen,
 	emotionGen: generateEmotionPortrait,
 	wallpaper: wallpaperGen,
+	abstract: abstractGen,
 	tileSheet: tileSheetGen,
 	fortuneCookie,
 };
@@ -136,6 +165,35 @@ function normalizeArgs(method, args) {
 		const s = Number(a.scale);
 		if (Number.isFinite(s)) a.scale = Math.max(1, Math.floor(s));
 		else delete a.scale;
+	}
+
+	// Normalize width / height
+	if (
+		'width' in a &&
+		a.width !== null &&
+		a.width !== undefined &&
+		a.width !== ''
+	) {
+		const w = Number(a.width);
+		if (Number.isFinite(w)) a.width = Math.max(1, Math.floor(w));
+		else delete a.width;
+	}
+
+	if (
+		'height' in a &&
+		a.height !== null &&
+		a.height !== undefined &&
+		a.height !== ''
+	) {
+		const h = Number(a.height);
+		if (Number.isFinite(h)) a.height = Math.max(1, Math.floor(h));
+		else delete a.height;
+	}
+
+	// Normalize format
+	if (typeof a.format === 'string') {
+		a.format = a.format.trim().toLowerCase();
+		if (a.format !== 'png' && a.format !== 'svg') delete a.format;
 	}
 
 	// Normalize emotion
@@ -207,9 +265,11 @@ export default async function handler(req, res) {
 		const args = normalizeArgs(body.method, body.args || {});
 		const result = await generator(args);
 
-		// ✅ PNG OUTPUT (existing generators)
+		// Image output
 		if (result?.buffer) {
-			res.setHeader('Content-Type', 'image/png');
+			const contentType = result.mimeType || 'image/png';
+
+			res.setHeader('Content-Type', contentType);
 			res.setHeader('Content-Length', result.buffer.length);
 			res.setHeader('Cache-Control', 'no-cache');
 
@@ -219,6 +279,8 @@ export default async function handler(req, res) {
 				res.setHeader('X-Image-Height', String(result.height));
 			if (result.seed !== undefined)
 				res.setHeader('X-Seed', String(result.seed));
+			if (result.extension !== undefined)
+				res.setHeader('X-Image-Extension', String(result.extension));
 
 			return res.send(result.buffer);
 		}
