@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { Resvg } from '@resvg/resvg-js';
 import { getOpenSansFontsBase64 } from './utils.js';
 
 function escapeXml(str = '') {
@@ -600,10 +601,14 @@ async function birthdayCardGen(options = {}) {
     </svg>
   `;
 
-	const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+	const r = new Resvg(svg, {
+		fitTo: { mode: 'zoom', value: 1 },
+	});
+
+	const png = r.render().asPng();
 
 	return {
-		buffer,
+		buffer: Buffer.from(png),
 		mimeType: 'image/png',
 		width,
 		height,
