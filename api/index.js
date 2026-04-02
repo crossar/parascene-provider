@@ -7,6 +7,7 @@ import wallpaperGen from '../generators/wallpaperGen.js';
 import tileSheetGen from '../generators/tileSheetGen.js';
 import fortuneCookie from '../generators/fortuneCookie.js';
 import abstractGen from '../generators/abstractGen.js';
+import birthdayCardGen from '../generators/birthdayCardGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -136,6 +137,101 @@ const generationMethods = {
 			},
 		},
 	},
+
+	birthdayCard: {
+		name: 'Birthday Card Generator',
+		description:
+			'Generates colorful birthday cards with different themes, palettes, layouts, and message styles.',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			theme: {
+				label: 'Theme',
+				required: false,
+				type: 'select',
+				default: 'cute',
+				options: [
+					{ label: 'Cute', value: 'cute' },
+					{ label: 'Elegant', value: 'elegant' },
+					{ label: 'Party', value: 'party' },
+					{ label: 'Floral', value: 'floral' },
+					{ label: 'Kids', value: 'kids' },
+					{ label: 'Pastel', value: 'pastel' },
+					{ label: 'Bold', value: 'bold' },
+					{ label: 'Minimal', value: 'minimal' },
+				],
+				description: 'Choose the visual theme of the birthday card.',
+			},
+			color: {
+				label: 'Color Palette',
+				required: false,
+				type: 'select',
+				default: 'pink',
+				options: [
+					{ label: 'Pink', value: 'pink' },
+					{ label: 'Blue', value: 'blue' },
+					{ label: 'Purple', value: 'purple' },
+					{ label: 'Gold', value: 'gold' },
+					{ label: 'Rainbow', value: 'rainbow' },
+					{ label: 'Red', value: 'red' },
+					{ label: 'Green', value: 'green' },
+					{ label: 'Pastel', value: 'pastel' },
+				],
+				description: 'Choose the card color palette.',
+			},
+			layout: {
+				label: 'Layout',
+				required: false,
+				type: 'select',
+				default: 'centered',
+				options: [
+					{ label: 'Centered', value: 'centered' },
+					{ label: 'Split', value: 'split' },
+					{ label: 'Framed', value: 'framed' },
+					{ label: 'Confetti Top', value: 'confetti-top' },
+					{ label: 'Balloon Corners', value: 'balloon-corners' },
+				],
+				description: 'Choose the layout style of the card.',
+			},
+			messageStyle: {
+				label: 'Message Style',
+				required: false,
+				type: 'select',
+				default: 'sweet',
+				options: [
+					{ label: 'Simple', value: 'simple' },
+					{ label: 'Sweet', value: 'sweet' },
+					{ label: 'Funny', value: 'funny' },
+					{ label: 'Cheerful', value: 'cheerful' },
+				],
+				description: 'Choose the style of birthday message.',
+			},
+			name: {
+				label: 'Name',
+				required: false,
+				type: 'string',
+				description: 'Optional recipient name for the card.',
+			},
+			age: {
+				label: 'Age',
+				required: false,
+				type: 'string',
+				description: 'Optional age to include on the card.',
+			},
+			orientation: {
+				label: 'Orientation',
+				required: false,
+				type: 'select',
+				default: 'portrait',
+				options: [
+					{ label: 'Portrait', value: 'portrait' },
+					{ label: 'Landscape', value: 'landscape' },
+				],
+				description: 'Choose portrait or landscape layout.',
+			},
+		},
+	},
+
 	tileSheet: {
 		name: 'Tile Sheet Generator',
 		description: 'Generates a 1024x1024 tileset PNG.',
@@ -164,6 +260,7 @@ const methodHandlers = {
 	emotionGen: generateEmotionPortrait,
 	wallpaper: wallpaperGen,
 	abstract: abstractGen,
+	birthdayCard: birthdayCardGen,
 	tileSheet: tileSheetGen,
 	fortuneCookie,
 };
@@ -171,13 +268,11 @@ const methodHandlers = {
 function normalizeArgs(method, args) {
 	const a = { ...(args || {}) };
 
-	// Normalize seed
 	if ('seed' in a && a.seed !== null && a.seed !== undefined && a.seed !== '') {
 		const n = Number(a.seed);
 		if (Number.isFinite(n)) a.seed = n;
 	}
 
-	// Normalize scale
 	if (
 		'scale' in a &&
 		a.scale !== null &&
@@ -189,7 +284,6 @@ function normalizeArgs(method, args) {
 		else delete a.scale;
 	}
 
-	// Normalize width / height
 	if (
 		'width' in a &&
 		a.width !== null &&
@@ -212,25 +306,60 @@ function normalizeArgs(method, args) {
 		else delete a.height;
 	}
 
-	// Normalize format
 	if (typeof a.format === 'string') {
 		a.format = a.format.trim().toLowerCase();
 		if (a.format !== 'png' && a.format !== 'svg') delete a.format;
 	}
 
-	// Normalize emotion
 	if (method === 'emotionGen' && typeof a.emotion === 'string') {
 		a.emotion = a.emotion.trim().toLowerCase();
 		if (!a.emotion) delete a.emotion;
 	}
 
-	// Normalize style
 	if (typeof a.style === 'string') {
 		a.style = a.style.trim().toLowerCase();
 		if (!a.style) delete a.style;
 	}
 
-	// Normalize tileSheet options
+	if (method === 'birthdayCard') {
+		if (typeof a.theme === 'string') {
+			a.theme = a.theme.trim().toLowerCase();
+			if (!a.theme) delete a.theme;
+		}
+
+		if (typeof a.color === 'string') {
+			a.color = a.color.trim().toLowerCase();
+			if (!a.color) delete a.color;
+		}
+
+		if (typeof a.layout === 'string') {
+			a.layout = a.layout.trim().toLowerCase();
+			if (!a.layout) delete a.layout;
+		}
+
+		if (typeof a.messageStyle === 'string') {
+			a.messageStyle = a.messageStyle.trim().toLowerCase();
+			if (!a.messageStyle) delete a.messageStyle;
+		}
+
+		if (typeof a.orientation === 'string') {
+			a.orientation = a.orientation.trim().toLowerCase();
+			if (a.orientation !== 'portrait' && a.orientation !== 'landscape') {
+				delete a.orientation;
+			}
+		}
+
+		if (typeof a.name === 'string') {
+			a.name = a.name.trim();
+			if (!a.name) delete a.name;
+		}
+
+		if (typeof a.age === 'string' || typeof a.age === 'number') {
+			a.age = String(a.age).trim();
+			if (!a.age) delete a.age;
+		}
+	}
+
 	if (method === 'tileSheet') {
 		if (
 			'grid' in a &&
@@ -293,7 +422,6 @@ export default async function handler(req, res) {
 		const args = normalizeArgs(body.method, body.args || {});
 		const result = await generator(args);
 
-		// Image output
 		if (result?.buffer) {
 			const contentType = result.mimeType || 'image/png';
 
@@ -313,7 +441,6 @@ export default async function handler(req, res) {
 			return res.send(result.buffer);
 		}
 
-		// JSON fallback
 		return res.status(200).json({
 			status: 'ok',
 			method: body.method,
