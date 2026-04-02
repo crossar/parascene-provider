@@ -160,7 +160,7 @@ function buildWrappedText({
       x="${x}"
       y="${y}"
       text-anchor="${textAnchor}"
-      font-family="OpenSansEmbedded"
+      font-family="Open Sans Embedded"
       font-size="${fontSize}"
       font-weight="${fontWeight}"
       letter-spacing="${letterSpacing}"
@@ -298,7 +298,7 @@ function renderHearts(width, height, color) {
         text-anchor="middle"
         fill="${color}"
         opacity="0.28"
-        font-family="OpenSansEmbedded"
+        font-family="Open Sans Embedded"
       >♥</text>
     `;
 	}
@@ -546,7 +546,7 @@ async function birthdayCardGen(options = {}) {
             x="${orientation === 'landscape' ? 180 : width / 2}"
             y="${orientation === 'landscape' ? height - 160 : 255}"
             text-anchor="middle"
-            font-family="OpenSansEmbedded"
+            font-family="Open Sans Embedded"
             font-size="44"
             font-weight="700"
             fill="#ffffff"
@@ -555,51 +555,50 @@ async function birthdayCardGen(options = {}) {
       `
 			: '';
 
-	const svg = `
-    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <style>
-          @font-face {
-            font-family: 'OpenSansEmbedded';
-            src: url("data:font/ttf;base64,${regularFontBase64}") format('truetype');
-            font-weight: 400;
-            font-style: normal;
-          }
+	const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'Open Sans Embedded';
+        src: url("data:font/ttf;base64,${regularFontBase64}") format('truetype');
+        font-weight: 400;
+        font-style: normal;
+      }
 
-          @font-face {
-            font-family: 'OpenSansEmbedded';
-            src: url("data:font/ttf;base64,${boldFontBase64}") format('truetype');
-            font-weight: 700;
-            font-style: normal;
-          }
-        </style>
+      @font-face {
+        font-family: 'Open Sans Embedded';
+        src: url("data:font/ttf;base64,${boldFontBase64}") format('truetype');
+        font-weight: 700;
+        font-style: normal;
+      }
+    </style>
 
-        <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="${p.bg}" />
-          <stop offset="100%" stop-color="${p.accent3}" />
-        </linearGradient>
-      </defs>
+    <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${p.bg}" />
+      <stop offset="100%" stop-color="${p.accent3}" />
+    </linearGradient>
+  </defs>
 
-      <rect width="100%" height="100%" fill="url(#bgGlow)" />
-      ${decorations}
-      ${ageBadge}
-      ${titleSvg}
-      ${subtitleSvg}
+  <rect width="100%" height="100%" fill="url(#bgGlow)" />
+  ${decorations}
+  ${ageBadge}
+  ${titleSvg}
+  ${subtitleSvg}
 
-      <text
-        x="${contentX}"
-        y="${footerY}"
-        text-anchor="${textAnchor}"
-        font-family="OpenSansEmbedded"
-        font-size="${smallSize}"
-        letter-spacing="${textStyle.footerLetterSpacing}"
-        fill="${p.accent}"
-        font-weight="700"
-      >
-        Make a wish and save room for cake
-      </text>
-    </svg>
-  `;
+  <text
+    x="${contentX}"
+    y="${footerY}"
+    text-anchor="${textAnchor}"
+    font-family="Open Sans Embedded"
+    font-size="${smallSize}"
+    letter-spacing="${textStyle.footerLetterSpacing}"
+    fill="${p.accent}"
+    font-weight="700"
+  >
+    Make a wish and save room for cake
+  </text>
+</svg>`;
 
 	const r = new Resvg(svg, {
 		fitTo: { mode: 'zoom', value: 1 },
