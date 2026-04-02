@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { Resvg } from '@resvg/resvg-js';
-import { getOpenSansFonts, ensureFontFilesExists } from './utils.js';
+import { getOpenSansFontsBase64, ensureFontFilesExists } from './utils.js';
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -185,7 +185,7 @@ async function svgToPng1024(svgString) {
 }
 
 export default async function fortuneCookie(args = {}) {
-	const fonts = getOpenSansFonts();
+	const fontBase64 = getOpenSansFontsBase64();
 	console.log('Font exists:', ensureFontFilesExists());
 
 	const seed = seedToInt(args.seed);
@@ -201,9 +201,6 @@ export default async function fortuneCookie(args = {}) {
 	const W = 1024;
 	const H = 1024;
 
-	// ✅ WebView-safe font stack (fixes □□□□ on mobile)
-	const FONT_STACK = 'Open Sans';
-
 	// ✅ Dynamic strip sizing based on number of lines
 	const stripX = 220;
 	const stripW = 584;
@@ -218,7 +215,7 @@ export default async function fortuneCookie(args = {}) {
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${FONT_STACK}"
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="Open Sans Embedded"
 				font-size="26" font-weight="700" fill="#111"
 			>${escXml(ln)}</text>`;
 		})
@@ -227,6 +224,21 @@ export default async function fortuneCookie(args = {}) {
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
+    <style>
+      @font-face {
+        font-family: 'Open Sans Embedded';
+        src: url("data:font/ttf;base64,${fontBase64.regular}") format('truetype');
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Open Sans Embedded';
+        src: url("data:font/ttf;base64,${fontBase64.bold}") format('truetype');
+        font-weight: 700;
+        font-style: normal;
+      }
+    </style>
+
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="${shadow}"/>
     </filter>
@@ -294,15 +306,8 @@ export default async function fortuneCookie(args = {}) {
 		`Generated fortune cookie with seed ${seed} and fortune: ${fortune}`
 	);
 
-	const { regular, bold } = fonts;
-
 	const r = new Resvg(svg, {
 		fitTo: { mode: 'width', value: 1024 },
-		font: {
-			loadSystemFonts: false,
-			fontFiles: [regular, bold],
-			defaultFontFamily: 'Open Sans',
-		},
 	});
 
 	const png = r.render().asPng();

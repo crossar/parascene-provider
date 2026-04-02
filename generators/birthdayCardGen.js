@@ -1,8 +1,6 @@
 import sharp from 'sharp';
 import { getOpenSansFontsBase64 } from './utils.js';
 
-const { regular: regularFontBase64, bold: boldFontBase64 } = getOpenSansFontsBase64();
-
 function escapeXml(str = '') {
 	return String(str)
 		.replace(/&/g, '&amp;')
@@ -431,6 +429,9 @@ function makeDecorations(theme, layout, p, width, height) {
 }
 
 async function birthdayCardGen(options = {}) {
+	const { regular: regularFontBase64, bold: boldFontBase64 } =
+		getOpenSansFontsBase64();
+
 	const {
 		theme = 'cute',
 		color = 'pink',
