@@ -1,4 +1,16 @@
 import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const regularFontPath = path.join(__dirname, '../fonts/OpenSans-Regular.ttf');
+const boldFontPath = path.join(__dirname, '../fonts/OpenSans-Bold.ttf');
+
+const regularFontBase64 = fs.readFileSync(regularFontPath).toString('base64');
+const boldFontBase64 = fs.readFileSync(boldFontPath).toString('base64');
 
 function escapeXml(str = '') {
 	return String(str)
@@ -72,6 +84,41 @@ const palettes = {
 	},
 };
 
+function getThemeTextStyle(theme) {
+	switch (theme) {
+		case 'elegant':
+			return {
+				titleLetterSpacing: '-0.02em',
+				subtitleLetterSpacing: '0.01em',
+				footerLetterSpacing: '0.02em',
+			};
+		case 'bold':
+			return {
+				titleLetterSpacing: '-0.03em',
+				subtitleLetterSpacing: '0em',
+				footerLetterSpacing: '0.01em',
+			};
+		case 'minimal':
+			return {
+				titleLetterSpacing: '-0.025em',
+				subtitleLetterSpacing: '0.005em',
+				footerLetterSpacing: '0.015em',
+			};
+		case 'kids':
+			return {
+				titleLetterSpacing: '-0.015em',
+				subtitleLetterSpacing: '0em',
+				footerLetterSpacing: '0.005em',
+			};
+		default:
+			return {
+				titleLetterSpacing: '-0.02em',
+				subtitleLetterSpacing: '0em',
+				footerLetterSpacing: '0.01em',
+			};
+	}
+}
+
 function wrapText(text, maxCharsPerLine = 22) {
 	if (!text) return [];
 
@@ -114,6 +161,7 @@ function buildWrappedText({
 	textAnchor = 'middle',
 	lineHeight = 1.2,
 	opacity,
+	letterSpacing = '0em',
 }) {
 	const opacityAttr = opacity !== undefined ? ` opacity="${opacity}"` : '';
 
@@ -122,9 +170,10 @@ function buildWrappedText({
       x="${x}"
       y="${y}"
       text-anchor="${textAnchor}"
-      font-family="sans-serif"
+      font-family="OpenSansEmbedded"
       font-size="${fontSize}"
       font-weight="${fontWeight}"
+      letter-spacing="${letterSpacing}"
       fill="${fill}"${opacityAttr}
     >
       ${lines
@@ -259,7 +308,7 @@ function renderHearts(width, height, color) {
         text-anchor="middle"
         fill="${color}"
         opacity="0.28"
-        font-family="sans-serif"
+        font-family="OpenSansEmbedded"
       >♥</text>
     `;
 	}
@@ -405,6 +454,7 @@ async function birthdayCardGen(options = {}) {
 	const height = orientation === 'landscape' ? 1024 : 1400;
 
 	const p = palettes[color] || palettes.pink;
+	const textStyle = getThemeTextStyle(theme);
 	const title = getBirthdayMessage(messageStyle, name, age);
 	const subtitle = getSubtitle(messageStyle, age);
 
@@ -479,6 +529,7 @@ async function birthdayCardGen(options = {}) {
 		fontWeight: '700',
 		textAnchor,
 		lineHeight: 1.15,
+		letterSpacing: textStyle.titleLetterSpacing,
 	});
 
 	const subtitleSvg = buildWrappedText({
@@ -490,6 +541,7 @@ async function birthdayCardGen(options = {}) {
 		textAnchor,
 		lineHeight: 1.28,
 		opacity: 0.88,
+		letterSpacing: textStyle.subtitleLetterSpacing,
 	});
 
 	const ageBadge =
@@ -501,7 +553,7 @@ async function birthdayCardGen(options = {}) {
             x="${orientation === 'landscape' ? 180 : width / 2}"
             y="${orientation === 'landscape' ? height - 160 : 255}"
             text-anchor="middle"
-            font-family="sans-serif"
+            font-family="OpenSansEmbedded"
             font-size="44"
             font-weight="700"
             fill="#ffffff"
@@ -513,6 +565,22 @@ async function birthdayCardGen(options = {}) {
 	const svg = `
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
+        <style>
+          @font-face {
+            font-family: 'OpenSansEmbedded';
+            src: url("data:font/ttf;base64,${regularFontBase64}") format('truetype');
+            font-weight: 400;
+            font-style: normal;
+          }
+
+          @font-face {
+            font-family: 'OpenSansEmbedded';
+            src: url("data:font/ttf;base64,${boldFontBase64}") format('truetype');
+            font-weight: 700;
+            font-style: normal;
+          }
+        </style>
+
         <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="${p.bg}" />
           <stop offset="100%" stop-color="${p.accent3}" />
@@ -529,10 +597,11 @@ async function birthdayCardGen(options = {}) {
         x="${contentX}"
         y="${footerY}"
         text-anchor="${textAnchor}"
-        font-family="sans-serif"
+        font-family="OpenSansEmbedded"
         font-size="${smallSize}"
+        letter-spacing="${textStyle.footerLetterSpacing}"
         fill="${p.accent}"
-        font-weight="600"
+        font-weight="700"
       >
         Make a wish and save room for cake
       </text>
