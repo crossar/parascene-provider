@@ -122,7 +122,7 @@ function buildWrappedText({
       x="${x}"
       y="${y}"
       text-anchor="${textAnchor}"
-      font-family="Arial, sans-serif"
+      font-family="sans-serif"
       font-size="${fontSize}"
       font-weight="${fontWeight}"
       fill="${fill}"${opacityAttr}
@@ -160,7 +160,7 @@ function getBirthdayMessage(style, name, age) {
 		],
 		cheerful: [
 			`Happy${ageLine} Birthday, ${person}!`,
-			`Let’s celebrate, ${person}!`,
+			`Let's celebrate, ${person}!`,
 			`Big birthday energy for ${person}!`,
 		],
 	};
@@ -259,7 +259,7 @@ function renderHearts(width, height, color) {
         text-anchor="middle"
         fill="${color}"
         opacity="0.28"
-        font-family="Arial, sans-serif"
+        font-family="sans-serif"
       >♥</text>
     `;
 	}
@@ -501,7 +501,7 @@ async function birthdayCardGen(options = {}) {
             x="${orientation === 'landscape' ? 180 : width / 2}"
             y="${orientation === 'landscape' ? height - 160 : 255}"
             text-anchor="middle"
-            font-family="Arial, sans-serif"
+            font-family="sans-serif"
             font-size="44"
             font-weight="700"
             fill="#ffffff"
@@ -529,7 +529,7 @@ async function birthdayCardGen(options = {}) {
         x="${contentX}"
         y="${footerY}"
         text-anchor="${textAnchor}"
-        font-family="Arial, sans-serif"
+        font-family="sans-serif"
         font-size="${smallSize}"
         fill="${p.accent}"
         font-weight="600"
