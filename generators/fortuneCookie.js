@@ -1,7 +1,6 @@
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 import { Resvg } from '@resvg/resvg-js';
+import { getOpenSansFonts, ensureFontFilesExists } from './utils.js';
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -186,10 +185,8 @@ async function svgToPng1024(svgString) {
 }
 
 export default async function fortuneCookie(args = {}) {
-	console.log(
-		'Font exists:',
-		fs.existsSync(path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf'))
-	);
+	const fonts = getOpenSansFonts();
+	console.log('Font exists:', ensureFontFilesExists());
 
 	const seed = seedToInt(args.seed);
 	const rng = mulberry32(seed);
@@ -297,9 +294,7 @@ export default async function fortuneCookie(args = {}) {
 		`Generated fortune cookie with seed ${seed} and fortune: ${fortune}`
 	);
 
-	// Load a real font file you ship in your repo
-	const regular = path.join(process.cwd(), 'fonts', 'OpenSans-Regular.ttf');
-	const bold = path.join(process.cwd(), 'fonts', 'OpenSans-Bold.ttf');
+	const { regular, bold } = fonts;
 
 	const r = new Resvg(svg, {
 		fitTo: { mode: 'width', value: 1024 },

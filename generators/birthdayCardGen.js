@@ -1,16 +1,7 @@
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getOpenSansFontsBase64 } from './utils.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const regularFontPath = path.join(__dirname, '../fonts/OpenSans-Regular.ttf');
-const boldFontPath = path.join(__dirname, '../fonts/OpenSans-Bold.ttf');
-
-const regularFontBase64 = fs.readFileSync(regularFontPath).toString('base64');
-const boldFontBase64 = fs.readFileSync(boldFontPath).toString('base64');
+const { regular: regularFontBase64, bold: boldFontBase64 } = getOpenSansFontsBase64();
 
 function escapeXml(str = '') {
 	return String(str)
