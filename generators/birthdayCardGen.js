@@ -1,15 +1,9 @@
-import sharp from 'sharp';
-import { Resvg } from '@resvg/resvg-js';
-import { getOpenSansFontsBase64 } from './utils.js';
-
-function escapeXml(str = '') {
-	return String(str)
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&apos;');
-}
+import {
+	OPEN_SANS_EMBEDDED_FAMILY,
+	escapeSvgText,
+	openSansEmbeddedStyleBlock,
+	renderOpenSansSvgToPng,
+} from '../lib/openSansEmbedded.js';
 
 function pick(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
@@ -160,7 +154,7 @@ function buildWrappedText({
       x="${x}"
       y="${y}"
       text-anchor="${textAnchor}"
-      font-family="Open Sans Embedded"
+      font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
       font-size="${fontSize}"
       font-weight="${fontWeight}"
       letter-spacing="${letterSpacing}"
@@ -169,7 +163,7 @@ function buildWrappedText({
       ${lines
 				.map(
 					(line, i) => `
-        <tspan x="${x}" dy="${i === 0 ? '0' : `${lineHeight}em`}">${escapeXml(line)}</tspan>
+        <tspan x="${x}" dy="${i === 0 ? '0' : `${lineHeight}em`}">${escapeSvgText(line)}</tspan>
       `
 				)
 				.join('')}
@@ -298,7 +292,7 @@ function renderHearts(width, height, color) {
         text-anchor="middle"
         fill="${color}"
         opacity="0.28"
-        font-family="Open Sans Embedded"
+        font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
       >♥</text>
     `;
 	}
@@ -430,9 +424,6 @@ function makeDecorations(theme, layout, p, width, height) {
 }
 
 async function birthdayCardGen(options = {}) {
-	const { regular: regularFontBase64, bold: boldFontBase64 } =
-		getOpenSansFontsBase64();
-
 	const {
 		theme = 'cute',
 		color = 'pink',
@@ -454,11 +445,14 @@ async function birthdayCardGen(options = {}) {
 	let subtitleSize = 28;
 	const smallSize = 22;
 
+	const TITLE_LINE_HEIGHT_EM = 1.15;
+	const SUB_LINE_HEIGHT_EM = 1.28;
+	const gapBadgeToTitle = 80;
+	const gapTitleToSubtitle = 44;
+	const gapSubtitleToFooter = 56;
+
 	let contentX = '50%';
 	let textAnchor = 'middle';
-	let titleY = height * 0.42;
-	let subtitleY = height * 0.56;
-	let footerY = height * 0.67;
 
 	if (layout === 'split') {
 		contentX = '58%';
@@ -484,13 +478,47 @@ async function birthdayCardGen(options = {}) {
 		subtitleSize -= 2;
 	}
 
-	titleY = titleLines.length >= 3 ? height * 0.34 : height * 0.4;
-	subtitleY = titleY + titleSize * (titleLines.length * 1.18);
-	footerY = subtitleY + subtitleSize * (subtitleLines.length * 1.55);
+	const hasAge = Boolean(age && String(age).trim());
+	const badgeDiameter = 140;
+	const titleSpan =
+		(titleLines.length - 1) * titleSize * TITLE_LINE_HEIGHT_EM;
+	const subtitleSpan =
+		(subtitleLines.length - 1) * subtitleSize * SUB_LINE_HEIGHT_EM;
 
-	if (footerY > height * 0.82) {
-		footerY = height * 0.82;
+	// From first title baseline through footer baseline, plus space below last line
+	const bottomPadding = 32;
+	const textColumnHeight =
+		titleSpan +
+		gapTitleToSubtitle +
+		subtitleSpan +
+		gapSubtitleToFooter +
+		bottomPadding;
+
+	const noAgeTitleOffset = 56;
+	const stackHeight =
+		(hasAge ? badgeDiameter + gapBadgeToTitle : noAgeTitleOffset) +
+		textColumnHeight;
+
+	const topInset = Math.max(48, (height - stackHeight) / 2);
+
+	let ageBadgeCy;
+	let ageBadgeTextY;
+	let titleY;
+	let subtitleY;
+	let footerY;
+
+	if (hasAge) {
+		ageBadgeCy = topInset + badgeDiameter / 2;
+		ageBadgeTextY = ageBadgeCy + 15;
+		titleY = topInset + badgeDiameter + gapBadgeToTitle;
+	} else {
+		ageBadgeCy = null;
+		ageBadgeTextY = null;
+		titleY = topInset + noAgeTitleOffset;
 	}
+
+	subtitleY = titleY + titleSpan + gapTitleToSubtitle;
+	footerY = subtitleY + subtitleSpan + gapSubtitleToFooter;
 
 	const titleSvg = buildWrappedText({
 		lines: titleLines,
@@ -516,43 +544,27 @@ async function birthdayCardGen(options = {}) {
 		letterSpacing: textStyle.subtitleLetterSpacing,
 	});
 
-	const ageBadge =
-		age && String(age).trim()
-			? `
+	const ageBadge = hasAge
+		? `
         <g>
-          <circle cx="${width / 2}" cy="240" r="70" fill="${p.accent}" opacity="0.95"/>
+          <circle cx="${width / 2}" cy="${ageBadgeCy}" r="70" fill="${p.accent}" opacity="0.95"/>
           <text
             x="${width / 2}"
-            y="255"
+            y="${ageBadgeTextY}"
             text-anchor="middle"
-            font-family="Open Sans Embedded"
+            font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
             font-size="44"
             font-weight="700"
             fill="#ffffff"
-          >${escapeXml(String(age).trim())}</text>
+          >${escapeSvgText(String(age).trim())}</text>
         </g>
       `
-			: '';
+		: '';
 
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <style>
-      @font-face {
-        font-family: 'Open Sans Embedded';
-        src: url("data:font/ttf;base64,${regularFontBase64}") format('truetype');
-        font-weight: 400;
-        font-style: normal;
-      }
-
-      @font-face {
-        font-family: 'Open Sans Embedded';
-        src: url("data:font/ttf;base64,${boldFontBase64}") format('truetype');
-        font-weight: 700;
-        font-style: normal;
-      }
-    </style>
-
+${openSansEmbeddedStyleBlock()}
     <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${p.bg}" />
       <stop offset="100%" stop-color="${p.accent3}" />
@@ -569,7 +581,7 @@ async function birthdayCardGen(options = {}) {
     x="${contentX}"
     y="${footerY}"
     text-anchor="${textAnchor}"
-    font-family="Open Sans Embedded"
+    font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
     font-size="${smallSize}"
     letter-spacing="${textStyle.footerLetterSpacing}"
     fill="${p.accent}"
@@ -579,14 +591,10 @@ async function birthdayCardGen(options = {}) {
   </text>
 </svg>`;
 
-	const r = new Resvg(svg, {
-		fitTo: { mode: 'zoom', value: 1 },
-	});
-
-	const png = r.render().asPng();
+	const png = renderOpenSansSvgToPng(svg);
 
 	return {
-		buffer: Buffer.from(png),
+		buffer: png,
 		mimeType: 'image/png',
 		width,
 		height,

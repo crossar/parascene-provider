@@ -1,6 +1,11 @@
 import crypto from 'crypto';
-import { Resvg } from '@resvg/resvg-js';
-import { getOpenSansFontsBase64, ensureFontFilesExists } from './utils.js';
+import {
+	OPEN_SANS_EMBEDDED_FAMILY,
+	ensureFontFilesExists,
+	escapeSvgText,
+	openSansEmbeddedStyleBlock,
+	renderOpenSansSvgToPng,
+} from '../lib/openSansEmbedded.js';
 
 function mulberry32(seed) {
 	let t = seed >>> 0;
@@ -22,15 +27,6 @@ function seedToInt(seed) {
 
 function pick(rng, arr) {
 	return arr[Math.floor(rng() * arr.length)];
-}
-
-function escXml(str) {
-	return String(str)
-		.replaceAll('&', '&amp;')
-		.replaceAll('<', '&lt;')
-		.replaceAll('>', '&gt;')
-		.replaceAll('"', '&quot;')
-		.replaceAll("'", '&apos;');
 }
 
 // ✅ Normalize punctuation so mobile fonts don’t choke
@@ -172,20 +168,7 @@ function wrapText(text, maxCharsPerLine = 28) {
 	return lines.slice(0, 3);
 }
 
-async function svgToPng1024(svgString) {
-	const svgBuffer = Buffer.from(svgString, 'utf8');
-
-	return await sharp(svgBuffer, {
-		density: 144, // helps text/curves look crisp; not required but nice
-	})
-		// ensure the rasterization target size is exactly 1024x1024
-		.resize(1024, 1024, { fit: 'fill' })
-		.png({ compressionLevel: 9, adaptiveFiltering: true })
-		.toBuffer();
-}
-
 export default async function fortuneCookie(args = {}) {
-	const fontBase64 = getOpenSansFontsBase64();
 	console.log('Font exists:', ensureFontFilesExists());
 
 	const seed = seedToInt(args.seed);
@@ -215,30 +198,16 @@ export default async function fortuneCookie(args = {}) {
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="Open Sans Embedded"
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
 				font-size="26" font-weight="700" fill="#111"
-			>${escXml(ln)}</text>`;
+			>${escapeSvgText(ln)}</text>`;
 		})
 		.join('\n');
 
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-    <style>
-      @font-face {
-        font-family: 'Open Sans Embedded';
-        src: url("data:font/ttf;base64,${fontBase64.regular}") format('truetype');
-        font-weight: 400;
-        font-style: normal;
-      }
-      @font-face {
-        font-family: 'Open Sans Embedded';
-        src: url("data:font/ttf;base64,${fontBase64.bold}") format('truetype');
-        font-weight: 700;
-        font-style: normal;
-      }
-    </style>
-
+${openSansEmbeddedStyleBlock()}
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="${shadow}"/>
     </filter>
@@ -297,7 +266,7 @@ export default async function fortuneCookie(args = {}) {
 
   ${textSvg}
 
-  <text x="512" y="940" text-anchor="middle" font-family="Open Sans" font-size="2" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="${OPEN_SANS_EMBEDDED_FAMILY}" font-size="2" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
@@ -306,14 +275,10 @@ export default async function fortuneCookie(args = {}) {
 		`Generated fortune cookie with seed ${seed} and fortune: ${fortune}`
 	);
 
-	const r = new Resvg(svg, {
-		fitTo: { mode: 'width', value: 1024 },
-	});
-
-	const png = r.render().asPng();
+	const png = renderOpenSansSvgToPng(svg);
 
 	return {
-		buffer: Buffer.from(png),
+		buffer: png,
 		// fortune,
 		seed,
 		width: W,
