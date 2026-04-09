@@ -1,7 +1,6 @@
 import {
-	OPEN_SANS_EMBEDDED_FAMILY,
+	OPEN_SANS_FAMILY,
 	escapeSvgText,
-	openSansEmbeddedStyleBlock,
 	renderOpenSansSvgToPng,
 } from '../lib/openSansEmbedded.js';
 
@@ -154,7 +153,7 @@ function buildWrappedText({
       x="${x}"
       y="${y}"
       text-anchor="${textAnchor}"
-      font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
+      font-family="${OPEN_SANS_FAMILY}"
       font-size="${fontSize}"
       font-weight="${fontWeight}"
       letter-spacing="${letterSpacing}"
@@ -292,7 +291,7 @@ function renderHearts(width, height, color) {
         text-anchor="middle"
         fill="${color}"
         opacity="0.28"
-        font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
+        font-family="${OPEN_SANS_FAMILY}"
       >♥</text>
     `;
 	}
@@ -552,7 +551,7 @@ async function birthdayCardGen(options = {}) {
             x="${width / 2}"
             y="${ageBadgeTextY}"
             text-anchor="middle"
-            font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
+            font-family="${OPEN_SANS_FAMILY}"
             font-size="44"
             font-weight="700"
             fill="#ffffff"
@@ -564,7 +563,6 @@ async function birthdayCardGen(options = {}) {
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-${openSansEmbeddedStyleBlock()}
     <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${p.bg}" />
       <stop offset="100%" stop-color="${p.accent3}" />
@@ -581,7 +579,7 @@ ${openSansEmbeddedStyleBlock()}
     x="${contentX}"
     y="${footerY}"
     text-anchor="${textAnchor}"
-    font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
+    font-family="${OPEN_SANS_FAMILY}"
     font-size="${smallSize}"
     letter-spacing="${textStyle.footerLetterSpacing}"
     fill="${p.accent}"

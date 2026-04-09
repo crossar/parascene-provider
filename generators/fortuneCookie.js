@@ -1,9 +1,8 @@
 import crypto from 'crypto';
 import {
-	OPEN_SANS_EMBEDDED_FAMILY,
+	OPEN_SANS_FAMILY,
 	ensureFontFilesExists,
 	escapeSvgText,
-	openSansEmbeddedStyleBlock,
 	renderOpenSansSvgToPng,
 } from '../lib/openSansEmbedded.js';
 
@@ -198,7 +197,7 @@ export default async function fortuneCookie(args = {}) {
 	const textSvg = lines
 		.map((ln, i) => {
 			const dy = (i - (lines.length - 1) / 2) * 46;
-			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${OPEN_SANS_EMBEDDED_FAMILY}"
+			return `<text x="512" y="${500 + dy}" text-anchor="middle" font-family="${OPEN_SANS_FAMILY}"
 				font-size="26" font-weight="700" fill="#111"
 			>${escapeSvgText(ln)}</text>`;
 		})
@@ -207,7 +206,6 @@ export default async function fortuneCookie(args = {}) {
 	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <defs>
-${openSansEmbeddedStyleBlock()}
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="${shadow}"/>
     </filter>
@@ -266,7 +264,7 @@ ${openSansEmbeddedStyleBlock()}
 
   ${textSvg}
 
-  <text x="512" y="940" text-anchor="middle" font-family="${OPEN_SANS_EMBEDDED_FAMILY}" font-size="2" fill="rgba(0,0,0,0.35)">
+  <text x="512" y="940" text-anchor="middle" font-family="${OPEN_SANS_FAMILY}" font-size="2" fill="rgba(0,0,0,0.35)">
     seed: ${seed}
   </text>
 </svg>`;
