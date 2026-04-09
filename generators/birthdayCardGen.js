@@ -440,20 +440,19 @@ async function birthdayCardGen(options = {}) {
 		messageStyle = 'sweet',
 		name = '',
 		age = '',
-		orientation = 'portrait',
 	} = options;
 
-	const width = orientation === 'landscape' ? 1400 : 1024;
-	const height = orientation === 'landscape' ? 1024 : 1400;
+	const width = 1024;
+	const height = 1024;
 
 	const p = palettes[color] || palettes.pink;
 	const textStyle = getThemeTextStyle(theme);
 	const title = getBirthdayMessage(messageStyle, name, age);
 	const subtitle = getSubtitle(messageStyle, age);
 
-	let titleSize = orientation === 'landscape' ? 78 : 68;
-	let subtitleSize = orientation === 'landscape' ? 32 : 28;
-	const smallSize = orientation === 'landscape' ? 24 : 22;
+	let titleSize = 68;
+	let subtitleSize = 28;
+	const smallSize = 22;
 
 	let contentX = '50%';
 	let textAnchor = 'middle';
@@ -462,28 +461,14 @@ async function birthdayCardGen(options = {}) {
 	let footerY = height * 0.67;
 
 	if (layout === 'split') {
-		contentX = orientation === 'landscape' ? '68%' : '58%';
+		contentX = '58%';
 	}
 
 	const decorations = makeDecorations(theme, layout, p, width, height);
 
-	const titleMaxChars =
-		layout === 'split'
-			? orientation === 'landscape'
-				? 18
-				: 16
-			: orientation === 'landscape'
-				? 24
-				: 18;
+	const titleMaxChars = layout === 'split' ? 16 : 18;
 
-	const subtitleMaxChars =
-		layout === 'split'
-			? orientation === 'landscape'
-				? 24
-				: 20
-			: orientation === 'landscape'
-				? 38
-				: 26;
+	const subtitleMaxChars = layout === 'split' ? 20 : 26;
 
 	let titleLines = wrapText(title, titleMaxChars);
 	let subtitleLines = wrapText(subtitle, subtitleMaxChars);
@@ -492,22 +477,16 @@ async function birthdayCardGen(options = {}) {
 	subtitleLines = clampLines(subtitleLines, 3);
 
 	if (titleLines.length >= 3) {
-		titleSize -= orientation === 'landscape' ? 10 : 8;
+		titleSize -= 8;
 	}
 
 	if (subtitleLines.length >= 3) {
 		subtitleSize -= 2;
 	}
 
-	if (orientation === 'landscape') {
-		titleY = titleLines.length >= 3 ? height * 0.34 : height * 0.39;
-		subtitleY = titleY + titleSize * (titleLines.length * 1.15);
-		footerY = subtitleY + subtitleSize * (subtitleLines.length * 1.45);
-	} else {
-		titleY = titleLines.length >= 3 ? height * 0.34 : height * 0.4;
-		subtitleY = titleY + titleSize * (titleLines.length * 1.18);
-		footerY = subtitleY + subtitleSize * (subtitleLines.length * 1.55);
-	}
+	titleY = titleLines.length >= 3 ? height * 0.34 : height * 0.4;
+	subtitleY = titleY + titleSize * (titleLines.length * 1.18);
+	footerY = subtitleY + subtitleSize * (subtitleLines.length * 1.55);
 
 	if (footerY > height * 0.82) {
 		footerY = height * 0.82;
@@ -541,10 +520,10 @@ async function birthdayCardGen(options = {}) {
 		age && String(age).trim()
 			? `
         <g>
-          <circle cx="${orientation === 'landscape' ? 180 : width / 2}" cy="${orientation === 'landscape' ? height - 180 : 240}" r="70" fill="${p.accent}" opacity="0.95"/>
+          <circle cx="${width / 2}" cy="240" r="70" fill="${p.accent}" opacity="0.95"/>
           <text
-            x="${orientation === 'landscape' ? 180 : width / 2}"
-            y="${orientation === 'landscape' ? height - 160 : 255}"
+            x="${width / 2}"
+            y="255"
             text-anchor="middle"
             font-family="Open Sans Embedded"
             font-size="44"

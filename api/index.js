@@ -141,7 +141,7 @@ const generationMethods = {
 	birthdayCard: {
 		name: 'Birthday Card Generator',
 		description:
-			'Generates colorful birthday cards with different themes, palettes, layouts, and message styles.',
+			'Generates colorful 1024×1024 birthday cards with different themes, palettes, layouts, and message styles.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {
@@ -217,17 +217,6 @@ const generationMethods = {
 				required: false,
 				type: 'string',
 				description: 'Optional age to include on the card.',
-			},
-			orientation: {
-				label: 'Orientation',
-				required: false,
-				type: 'select',
-				default: 'portrait',
-				options: [
-					{ label: 'Portrait', value: 'portrait' },
-					{ label: 'Landscape', value: 'landscape' },
-				],
-				description: 'Choose portrait or landscape layout.',
 			},
 		},
 	},
@@ -340,13 +329,6 @@ function normalizeArgs(method, args) {
 		if (typeof a.messageStyle === 'string') {
 			a.messageStyle = a.messageStyle.trim().toLowerCase();
 			if (!a.messageStyle) delete a.messageStyle;
-		}
-
-		if (typeof a.orientation === 'string') {
-			a.orientation = a.orientation.trim().toLowerCase();
-			if (a.orientation !== 'portrait' && a.orientation !== 'landscape') {
-				delete a.orientation;
-			}
 		}
 
 		if (typeof a.name === 'string') {
