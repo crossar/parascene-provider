@@ -48,22 +48,35 @@ const generationMethods = {
 	},
 
 	personaGen: {
-		name: 'PersonaGen',
-		description: 'Random code-only pixel character (192x288). No PNG assets.',
+		name: 'Random Character Generator',
+		description:
+			'Generates a random code-only pixel character. No input required. Leave all fields empty for a new random character each time.',
 		intent: 'image_generate',
 		credits: 0.1,
 		fields: {
-			seed: {
-				label: 'Seed',
-				required: false,
-				type: 'string',
-				description: 'Optional. Same seed = same character.',
-			},
 			bg: {
 				label: 'Background Color',
 				required: false,
 				type: 'string',
 				description: 'Optional hex color like "#191C28".',
+			},
+			width: {
+				label: 'Width',
+				required: false,
+				type: 'number',
+				description: 'Optional output width in pixels. Default 192.',
+			},
+			height: {
+				label: 'Height',
+				required: false,
+				type: 'number',
+				description: 'Optional output height in pixels. Default 288.',
+			},
+			px: {
+				label: 'Detail Level',
+				required: false,
+				type: 'number',
+				description: 'Optional internal pixel grid size. Default 28.',
 			},
 		},
 	},
@@ -293,6 +306,19 @@ function normalizeArgs(method, args) {
 		const h = Number(a.height);
 		if (Number.isFinite(h)) a.height = Math.max(1, Math.floor(h));
 		else delete a.height;
+	}
+
+	if (method === 'personaGen') {
+		if ('px' in a && a.px !== null && a.px !== undefined && a.px !== '') {
+			const px = Number(a.px);
+			if (Number.isFinite(px)) a.px = Math.max(1, Math.floor(px));
+			else delete a.px;
+		}
+
+		if (typeof a.bg === 'string') {
+			a.bg = a.bg.trim();
+			if (!/^#[0-9A-Fa-f]{6}$/.test(a.bg)) delete a.bg;
+		}
 	}
 
 	if (typeof a.format === 'string') {
