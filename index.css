@@ -320,16 +320,18 @@ code {
 .image-preview img,
 #postResult img {
 	display: block;
-	max-width: 100%;
-	width: 100%;
+	width: auto;
 	height: auto;
-	border-radius: 16px;
+	max-width: min(100%, 384px);
+	max-height: 576px;
 	margin-top: 16px;
+	border-radius: 16px;
 	border: 1px solid var(--border);
-	background: white;
+	background: #08111f;
 	box-shadow: var(--shadow-sm);
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
 }
-
 #postResult p {
 	color: var(--text-soft);
 	font-size: 0.95rem;
@@ -395,6 +397,13 @@ code {
 
 img {
 	image-rendering: auto;
+}
+
+#imageResult,
+.image-preview img,
+#postResult img {
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
 }
 
 @keyframes fadeIn {

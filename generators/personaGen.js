@@ -1,3 +1,4 @@
+// generators/personaGen.js
 import sharp from 'sharp';
 
 /* ---------------- RNG helpers ---------------- */
@@ -95,6 +96,7 @@ const TOPS = [
 	'#14B8A6',
 	'#E11D48',
 ];
+
 const BOTTOMS = [
 	'#1F2937',
 	'#334155',
@@ -104,6 +106,7 @@ const BOTTOMS = [
 	'#0EA5E9',
 	'#1E293B',
 ];
+
 const SHOES = ['#111827', '#3F3F46', '#78350F', '#0B0F1A', '#475569'];
 
 /* ---------------- grid helpers ---------------- */
@@ -112,22 +115,27 @@ function makeEmptyGrid(px) {
 		Array.from({ length: px }, () => null)
 	);
 }
+
 function setPx(grid, x, y, color) {
 	if (y < 0 || y >= grid.length) return;
 	if (x < 0 || x >= grid[0].length) return;
 	grid[y][x] = color;
 }
+
 function fillRect(grid, x0, y0, w, h, color) {
 	for (let y = y0; y < y0 + h; y++) {
 		for (let x = x0; x < x0 + w; x++) setPx(grid, x, y, color);
 	}
 }
+
 function hLine(grid, x, y, w, color) {
 	for (let i = 0; i < w; i++) setPx(grid, x + i, y, color);
 }
+
 function vLine(grid, x, y, h, color) {
 	for (let i = 0; i < h; i++) setPx(grid, x, y + i, color);
 }
+
 function toPixelSVG(grid, scale) {
 	const px = grid.length;
 	const w = px * scale;
@@ -147,42 +155,10 @@ function toPixelSVG(grid, scale) {
 
 /* ---------------- silhouette templates ---------------- */
 const BODY_TYPES = [
-	{
-		name: 'chibi',
-		headW: 8,
-		headH: 7,
-		bodyW: 8,
-		bodyH: 6,
-		legH: 3,
-		armH: 3,
-	},
-	{
-		name: 'slim',
-		headW: 7,
-		headH: 7,
-		bodyW: 7,
-		bodyH: 6,
-		legH: 4,
-		armH: 3,
-	},
-	{
-		name: 'stocky',
-		headW: 8,
-		headH: 6,
-		bodyW: 9,
-		bodyH: 6,
-		legH: 3,
-		armH: 3,
-	},
-	{
-		name: 'tiny',
-		headW: 7,
-		headH: 6,
-		bodyW: 7,
-		bodyH: 5,
-		legH: 3,
-		armH: 2,
-	},
+	{ name: 'chibi', headW: 8, headH: 7, bodyW: 8, bodyH: 6, legH: 3, armH: 3 },
+	{ name: 'slim', headW: 7, headH: 7, bodyW: 7, bodyH: 6, legH: 4, armH: 3 },
+	{ name: 'stocky', headW: 8, headH: 6, bodyW: 9, bodyH: 6, legH: 3, armH: 3 },
+	{ name: 'tiny', headW: 7, headH: 6, bodyW: 7, bodyH: 5, legH: 3, armH: 2 },
 ];
 
 /* ---------------- hair / hat rules ---------------- */
@@ -200,7 +176,6 @@ function drawHair(grid, headX, headY, headW, headH, hair, rnd, options = {}) {
 		setPx(grid, headX, headY + 2, hairShade);
 		setPx(grid, headX + headW - 1, headY + 2, hairShade);
 	} else if (style === 'sidepart') {
-		fillRect(grid, headX, headY, headW, 2, hair);
 		for (let x = headX + 1; x < headX + Math.floor(headW / 2); x++) {
 			setPx(grid, x, headY + 2, hairShade);
 		}
@@ -442,13 +417,7 @@ function drawOutfit(grid, cx, bodyY, bodyW, bodyH, legH, armH, skin, rnd) {
 	fillRect(grid, leftLegX, legY + legH, legW, 1, shoes);
 	fillRect(grid, rightLegX, legY + legH, legW, 1, shoes);
 
-	return {
-		top,
-		bottom,
-		shoes,
-		outfit,
-		armPose,
-	};
+	return { top, bottom, shoes, outfit, armPose };
 }
 
 /* ---------------- main character ---------------- */
@@ -512,6 +481,7 @@ function generateCharacter(px, rnd) {
 	};
 }
 
+/* ---------------- fixed-output generator ---------------- */
 export default async function generatePersonaGen(args = {}) {
 	const hasSeed =
 		args.seed !== undefined &&
@@ -524,75 +494,41 @@ export default async function generatePersonaGen(args = {}) {
 			: hashStringToSeed(String(args.seed))
 		: Math.floor(Math.random() * 2 ** 32);
 
-	const mode = String(args.mode ?? 'single');
-	const bg =
-		typeof args.bg === 'string' && /^#[0-9A-Fa-f]{6}$/.test(args.bg)
-			? args.bg
-			: '#191C28';
+	const bg = '#191C28';
+	const targetWidth = 192;
+	const targetHeight = 288;
+	const px = 28;
 
-	if (mode === 'single') {
-		const targetWidth = clamp(Number(args.width ?? 192), 32, 2048);
-		const targetHeight = clamp(Number(args.height ?? 288), 32, 2048);
-		const px = clamp(Number(args.px ?? 28), 16, 64);
+	const scaleX = Math.floor(targetWidth / px);
+	const scaleY = Math.floor(targetHeight / px);
+	const scale = clamp(Math.min(scaleX, scaleY), 1, 64);
 
-		const scaleX = Math.floor(targetWidth / px);
-		const scaleY = Math.floor(targetHeight / px);
-		const scale = clamp(Math.min(scaleX, scaleY), 1, 64);
-
-		const rnd = mulberry32(seed);
-		const { grid } = generateCharacter(px, rnd);
-		const svg = toPixelSVG(grid, scale);
-
-		const charW = px * scale;
-		const charH = px * scale;
-
-		const offsetX = Math.floor((targetWidth - charW) / 2);
-		const offsetY = Math.floor((targetHeight - charH) / 2);
-
-		const buffer = await sharp({
-			create: {
-				width: targetWidth,
-				height: targetHeight,
-				channels: 4,
-				background: bg,
-			},
-		})
-			.composite([{ input: Buffer.from(svg), left: offsetX, top: offsetY }])
-			.png()
-			.toBuffer();
-
-		return { buffer, width: targetWidth, height: targetHeight, seed };
-	}
-
-	const px = clamp(Number(args.px ?? 18), 8, 64);
-	const scale = clamp(Number(args.scale ?? 6), 1, 32);
-
-	const cols = clamp(Number(args.cols ?? 10), 1, 50);
-	const rows = clamp(Number(args.rows ?? 4), 1, 50);
-	const count = clamp(Number(args.count ?? cols * rows), 1, cols * rows);
+	const rnd = mulberry32(seed);
+	const { grid } = generateCharacter(px, rnd);
+	const svg = toPixelSVG(grid, scale);
 
 	const charW = px * scale;
 	const charH = px * scale;
-	const width = cols * charW;
-	const height = rows * charH;
 
-	const base = sharp({
-		create: { width, height, channels: 4, background: bg },
-	});
+	const offsetX = Math.floor((targetWidth - charW) / 2);
+	const offsetY = Math.floor((targetHeight - charH) / 2);
 
-	const composites = [];
-	for (let i = 0; i < count; i++) {
-		const rnd = mulberry32((seed + i * 1013904223) >>> 0);
-		const { grid } = generateCharacter(px, rnd);
-		const svg = toPixelSVG(grid, scale);
+	const buffer = await sharp({
+		create: {
+			width: targetWidth,
+			height: targetHeight,
+			channels: 4,
+			background: bg,
+		},
+	})
+		.composite([{ input: Buffer.from(svg), left: offsetX, top: offsetY }])
+		.png()
+		.toBuffer();
 
-		composites.push({
-			input: Buffer.from(svg),
-			left: (i % cols) * charW,
-			top: Math.floor(i / cols) * charH,
-		});
-	}
-
-	const buffer = await base.composite(composites).png().toBuffer();
-	return { buffer, width, height, seed };
+	return {
+		buffer,
+		width: targetWidth,
+		height: targetHeight,
+		seed,
+	};
 }
