@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"watch": "vercel dev",
+		"watch": "vercel dev --listen 3030",
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
 	},
 	"dependencies": {
@@ -16,6 +16,6 @@
 	},
 	"devDependencies": {
 		"jest": "^30.2.0",
-		"vercel": "^50.5.2"
+		"vercel": "^50.42.0"
 	}
 }
