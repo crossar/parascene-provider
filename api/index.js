@@ -9,6 +9,7 @@ import fortuneCookie from '../generators/fortuneCookie.js';
 import abstractGen from '../generators/abstractGen.js';
 import birthdayCardGen from '../generators/birthdayCardGen.js';
 import { generateWebsiteDesign } from '../generators/websiteDesignGen.js';
+import { cuteRobotGen } from "../generators/cuteRobotGen.js";
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -235,7 +236,7 @@ const generationMethods = {
 		description:
 			'Generates random website mockup designs with nice color palettes.',
 		intent: 'image_generate',
-		credits: 0.15,
+		credits: 0.1,
 		inputs: {
 			name: {
 				type: 'text',
@@ -244,6 +245,16 @@ const generationMethods = {
 			},
 		},
 	},
+
+	cuteRobot: {
+	name: 'Cute Robot Generator',
+	description:
+		'Generates a random cute robot companion with unique shapes, faces, and accessories.',
+	intent: 'image_generate',
+	credits: 0.1,
+	fields: {},
+},
+
 };
 
 const methodHandlers = {
@@ -257,6 +268,7 @@ const methodHandlers = {
 	tileSheet: tileSheetGen,
 	fortuneCookie,
 	websiteDesign: generateWebsiteDesign,
+	cuteRobot: cuteRobotGen,
 };
 
 function normalizeArgs(method, args) {
