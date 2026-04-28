@@ -246,14 +246,72 @@ const generationMethods = {
 		},
 	},
 
-	cuteRobot: {
-	name: 'Cute Robot Generator',
-	description:
-		'Generates a random cute robot companion with unique shapes, faces, and accessories.',
-	intent: 'image_generate',
-	credits: 0.1,
-	fields: {},
-},
+		cuteRobot: {
+		name: 'Cute Robot Generator',
+		description:
+			'Generates a random cute robot companion with unique shapes, faces, and accessories.',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			bodyType: {
+				label: 'Body Type',
+				required: false,
+				type: 'select',
+				default: '',
+				options: [
+					{ label: 'Random', value: '' },
+					{ label: 'Round', value: 'round' },
+					{ label: 'Square', value: 'square' },
+					{ label: 'Capsule', value: 'capsule' },
+					{ label: 'Tiny', value: 'tiny' },
+					{ label: 'Wide', value: 'wide' },
+					{ label: 'Stacked', value: 'stacked' },
+					{ label: 'Floating', value: 'floating' },
+					{ label: 'Tank', value: 'tank' },
+				],
+			},
+			face: {
+				label: 'Face',
+				required: false,
+				type: 'select',
+				default: '',
+				options: [
+					{ label: 'Random', value: '' },
+					{ label: 'Happy', value: 'happy' },
+					{ label: 'Sleepy', value: 'sleepy' },
+					{ label: 'Heart', value: 'heart' },
+					{ label: 'Pixel', value: 'pixel' },
+					{ label: 'Loading', value: 'loading' },
+					{ label: 'Surprised', value: 'surprised' },
+					{ label: 'Wink', value: 'wink' },
+				],
+			},
+			accessory: {
+				label: 'Accessory',
+				required: false,
+				type: 'select',
+				default: '',
+				options: [
+					{ label: 'Random', value: '' },
+					{ label: 'Antenna', value: 'antenna' },
+					{ label: 'Headphones', value: 'headphones' },
+					{ label: 'Flower', value: 'flower' },
+					{ label: 'Cap', value: 'cap' },
+					{ label: 'Halo', value: 'halo' },
+					{ label: 'Backpack', value: 'backpack' },
+					{ label: 'Ears', value: 'ears' },
+					{ label: 'Bow', value: 'bow' },
+					{ label: 'None', value: 'none' },
+				],
+			},
+			name: {
+				label: 'Name',
+				required: false,
+				type: 'string',
+				description: 'Optional robot name',
+			},
+		},
+	},
 
 };
 

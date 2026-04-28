@@ -305,7 +305,7 @@ export async function cuteRobotGen(options = {}) {
 
 	return {
 		buffer,
-		contentType: "image/png",
+		mimeType: "image/png",
 		width: SIZE,
 		height: SIZE,
 	};
