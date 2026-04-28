@@ -197,33 +197,38 @@ export async function generateWebsiteDesign(options = {}) {
   <!-- Hero text -->
   ${renderLines(headlineLines, 88, 260, 54, palette.dark)}
 
-  <text x="90" y="455" font-size="23" font-family="${OPEN_SANS_FAMILY}" fill="${palette.text}">
-    Clean layouts, modern colors, and creative web experiences.
+  <!-- Subtitle -->
+  <text x="90" y="445" font-size="22" font-family="${OPEN_SANS_FAMILY}" fill="${palette.text}">
+    Clean layouts, modern colors,
   </text>
 
-  <text x="90" y="495" font-size="23" font-family="${OPEN_SANS_FAMILY}" fill="${palette.text}">
-    Designed to feel polished, friendly, and professional.
+  <text x="90" y="482" font-size="22" font-family="${OPEN_SANS_FAMILY}" fill="${palette.text}">
+    and creative web experiences.
+  </text>
+
+  <text x="90" y="519" font-size="22" font-family="${OPEN_SANS_FAMILY}" fill="${palette.text}">
+    Designed to feel polished and professional.
   </text>
 
   <!-- Buttons -->
-  <rect x="88" y="555" width="165" height="60" rx="14" fill="${palette.primary}" filter="url(#shadow)" />
-  <text x="123" y="593" font-size="18" font-family="${OPEN_SANS_FAMILY}" font-weight="800" fill="#ffffff">
+  <rect x="88" y="585" width="165" height="60" rx="14" fill="${palette.primary}" filter="url(#shadow)" />
+  <text x="123" y="623" font-size="18" font-family="${OPEN_SANS_FAMILY}" font-weight="800" fill="#ffffff">
     View Work
   </text>
 
-  <rect x="275" y="555" width="170" height="60" rx="14" fill="none" stroke="${palette.dark}" stroke-width="3"/>
-  <text x="313" y="593" font-size="18" font-family="${OPEN_SANS_FAMILY}" font-weight="800" fill="${palette.dark}">
+  <rect x="275" y="585" width="170" height="60" rx="14" fill="none" stroke="${palette.dark}" stroke-width="3"/>
+  <text x="313" y="623" font-size="18" font-family="${OPEN_SANS_FAMILY}" font-weight="800" fill="${palette.dark}">
     Learn More
   </text>
 
   <!-- Mockup card -->
-  <rect x="680" y="300" width="260" height="330" rx="32" fill="${palette.card}" opacity="0.96" filter="url(#shadow)"/>
-  <rect x="712" y="335" width="198" height="120" rx="22" fill="${palette.primary}" opacity="0.22"/>
-  <circle cx="755" cy="395" r="34" fill="${palette.primary}" opacity="0.75"/>
+  <rect x="705" y="340" width="240" height="305" rx="32" fill="${palette.card}" opacity="0.96" filter="url(#shadow)"/>
+  <rect x="735" y="372" width="180" height="105" rx="22" fill="${palette.primary}" opacity="0.22"/>
+  <circle cx="775" cy="425" r="32" fill="${palette.primary}" opacity="0.75"/>
 
-  <rect x="712" y="492" width="182" height="17" rx="8" fill="${palette.text}" opacity="0.35"/>
-  <rect x="712" y="525" width="145" height="17" rx="8" fill="${palette.text}" opacity="0.25"/>
-  <rect x="712" y="575" width="90" height="38" rx="13" fill="${palette.primary}"/>
+  <rect x="735" y="515" width="165" height="16" rx="8" fill="${palette.text}" opacity="0.35"/>
+  <rect x="735" y="548" width="130" height="16" rx="8" fill="${palette.text}" opacity="0.25"/>
+  <rect x="735" y="592" width="85" height="36" rx="13" fill="${palette.primary}"/>
 
   <!-- Bottom feature cards -->
   <rect x="88" y="760" width="250" height="105" rx="22" fill="${palette.card}" opacity="0.96" filter="url(#shadow)"/>
