@@ -1,4 +1,8 @@
-import sharp from "sharp";
+import {
+	OPEN_SANS_FAMILY,
+	escapeSvgText,
+	renderOpenSansSvgToPng,
+} from "../lib/openSansEmbedded.js";
 
 const SIZE = 1024;
 
@@ -8,15 +12,6 @@ function pick(arr) {
 
 function rand(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function escapeXml(value = "") {
-	return String(value)
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&apos;");
 }
 
 const palettes = [
@@ -85,6 +80,7 @@ function background(p) {
 			const y = rand(40, 984);
 			const r = rand(4, 18);
 			const opacity = Math.random() * 0.25 + 0.08;
+
 			return `<circle cx="${x}" cy="${y}" r="${r}" fill="${p.accent}" opacity="${opacity}" />`;
 		})
 		.join("");
@@ -159,7 +155,7 @@ function arms(p) {
 	`;
 }
 
-function face(face, p) {
+function face(faceType, p) {
 	const screen = `
 		<rect x="360" y="420" width="304" height="170" rx="55" fill="${p.dark}" opacity="0.92" />
 	`;
@@ -179,7 +175,7 @@ function face(face, p) {
 		owo: `
 			<circle cx="455" cy="490" r="26" fill="#fff"/>
 			<circle cx="569" cy="490" r="26" fill="#fff"/>
-			<text x="512" y="555" text-anchor="middle" font-size="44" font-family="Arial" font-weight="900" fill="#fff">w</text>
+			<text x="512" y="555" text-anchor="middle" font-size="44" font-family="${OPEN_SANS_FAMILY}" font-weight="900" fill="#fff">w</text>
 		`,
 		pixel: `
 			<rect x="428" y="472" width="42" height="42" fill="#fff"/>
@@ -192,8 +188,8 @@ function face(face, p) {
 			<circle cx="594" cy="505" r="14" fill="#fff" opacity="0.35"/>
 		`,
 		heart: `
-			<text x="455" y="512" text-anchor="middle" font-size="54" font-family="Arial" fill="#fff">♥</text>
-			<text x="569" y="512" text-anchor="middle" font-size="54" font-family="Arial" fill="#fff">♥</text>
+			<text x="455" y="512" text-anchor="middle" font-size="54" font-family="${OPEN_SANS_FAMILY}" fill="#fff">♥</text>
+			<text x="569" y="512" text-anchor="middle" font-size="54" font-family="${OPEN_SANS_FAMILY}" fill="#fff">♥</text>
 			${mouth}
 		`,
 		surprised: `
@@ -217,7 +213,7 @@ function face(face, p) {
 		`,
 	};
 
-	return `${screen}${map[face] || map.happy}`;
+	return `${screen}${map[faceType] || map.happy}`;
 }
 
 function accessory(type, p) {
@@ -276,8 +272,8 @@ function details(p) {
 function label(name, p) {
 	return `
 		<rect x="332" y="820" width="360" height="70" rx="35" fill="#fff" opacity="0.72" />
-		<text x="512" y="866" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" font-weight="900" fill="${p.dark}">
-			${escapeXml(name)}
+		<text x="512" y="866" text-anchor="middle" font-size="34" font-family="${OPEN_SANS_FAMILY}" font-weight="900" fill="${p.dark}">
+			${escapeSvgText(name)}
 		</text>
 	`;
 }
@@ -289,7 +285,7 @@ export async function cuteRobotGen(options = {}) {
 	const robotAccessory = options.accessory || pick(accessories);
 	const robotName = options.name || pick(names);
 
-	const svg = `
+	const svg = `<?xml version="1.0" encoding="UTF-8"?>
 	<svg width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}" xmlns="http://www.w3.org/2000/svg">
 		${background(palette)}
 		${accessory(robotAccessory, palette)}
@@ -301,13 +297,14 @@ export async function cuteRobotGen(options = {}) {
 	</svg>
 	`;
 
-	const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+	const buffer = renderOpenSansSvgToPng(svg);
 
 	return {
 		buffer,
 		mimeType: "image/png",
 		width: SIZE,
 		height: SIZE,
+		extension: "png",
 	};
 }
 
