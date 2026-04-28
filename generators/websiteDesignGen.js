@@ -33,14 +33,71 @@ const palettes = [
 		text: '#d1d5db',
 		card: '#1f2937',
 	},
+
+	// NEW 🔥
+	{
+		name: 'Cyber Blue',
+		bg: '#0b1020',
+		primary: '#00e5ff',
+		dark: '#ffffff',
+		text: '#94a3b8',
+		card: '#111827',
+	},
+	{
+		name: 'Mint Fresh',
+		bg: '#ecfdf5',
+		primary: '#10b981',
+		dark: '#064e3b',
+		text: '#065f46',
+		card: '#ffffff',
+	},
+	{
+		name: 'Rose Gold',
+		bg: '#fff1f2',
+		primary: '#e11d48',
+		dark: '#4c0519',
+		text: '#9f1239',
+		card: '#ffffff',
+	},
+	{
+		name: 'Golden Dark',
+		bg: '#0f172a',
+		primary: '#facc15',
+		dark: '#ffffff',
+		text: '#cbd5f5',
+		card: '#1e293b',
+	},
 ];
+
+function randomColor() {
+	const letters = '0123456789ABCDEF';
+	let color = '#';
+	for (let i = 0; i < 6; i++) {
+		color += letters[Math.floor(Math.random() * 16)];
+	}
+	return color;
+}
+
+function generateRandomPalette() {
+	const primary = randomColor();
+
+	return {
+		name: 'Random Theme',
+		bg: Math.random() > 0.5 ? '#ffffff' : '#0f172a',
+		primary,
+		dark: Math.random() > 0.5 ? '#0f172a' : '#ffffff',
+		text: '#6b7280',
+		card: Math.random() > 0.5 ? '#ffffff' : '#1f2937',
+	};
+}
 
 function pick(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
 export async function generateWebsiteDesign(options = {}) {
-	const palette = pick(palettes);
+	const useRandom = Math.random() > 0.5;
+	const palette = useRandom ? generateRandomPalette() : pick(palettes);
 
 	const name = options.name || 'Jane Doe';
 
@@ -55,7 +112,14 @@ export async function generateWebsiteDesign(options = {}) {
 
 	const svg = `
   <svg width="1024" height="768" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1024" height="768" fill="${palette.bg}" />
+   <defs>
+  <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" stop-color="${palette.bg}" />
+    <stop offset="100%" stop-color="${palette.primary}" stop-opacity="0.2"/>
+  </linearGradient>
+</defs>
+
+<rect width="1024" height="768" fill="url(#bgGradient)" />
 
     <!-- background blobs -->
     <circle cx="850" cy="210" r="190" fill="${palette.primary}" opacity="0.18"/>
