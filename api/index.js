@@ -8,6 +8,7 @@ import tileSheetGen from '../generators/tileSheetGen.js';
 import fortuneCookie from '../generators/fortuneCookie.js';
 import abstractGen from '../generators/abstractGen.js';
 import birthdayCardGen from '../generators/birthdayCardGen.js';
+import { generateWebsiteDesign } from '../generators/websiteDesignGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -228,6 +229,21 @@ const generationMethods = {
 		credits: 0.1,
 		fields: {},
 	},
+
+	websiteDesign: {
+		name: 'Website Design Generator',
+		description:
+			'Generates random website mockup designs with nice color palettes.',
+		intent: 'image_generate',
+		credits: 0.15,
+		inputs: {
+			name: {
+				type: 'text',
+				default: 'Jane Doe',
+				description: 'Name to show on the website design',
+			},
+		},
+	},
 };
 
 const methodHandlers = {
@@ -240,6 +256,7 @@ const methodHandlers = {
 	birthdayCard: birthdayCardGen,
 	tileSheet: tileSheetGen,
 	fortuneCookie,
+	websiteDesign: generateWebsiteDesign,
 };
 
 function normalizeArgs(method, args) {
