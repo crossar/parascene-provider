@@ -17,22 +17,32 @@ const themes = [
 	'Final Boss',
 ];
 
-const bases = [
-	'Paper Hero',
-	'Tiny Dragon',
-	'Mushroom Knight',
-	'Space Cat',
-	'Robot Puppy',
-	'Slime Wizard',
-];
+const bases = {
+	hero: ['Paper Hero', 'Tiny Knight', 'Slime Wizard', 'Star Mage'],
+	creature: ['Tiny Dragon', 'Mushroom Beast', 'Void Slime', 'Forest Goblin'],
+	robot: ['Robot Puppy', 'Pocket Droid', 'Mecha Buddy', 'Rust Bot'],
+	animal: ['Space Cat', 'Battle Hamster', 'Cyber Fox', 'Moon Bunny'],
+	food: ['Pizza Beast', 'Ramen Wizard', 'Donut King', 'Burger Goblin'],
+	random: [
+		'Paper Hero',
+		'Tiny Dragon',
+		'Mushroom Knight',
+		'Space Cat',
+		'Robot Puppy',
+		'Slime Wizard',
+		'Pizza Beast',
+		'Pocket Droid',
+	],
+};
 
 async function mutationGen(args = {}) {
 	const width = 1024;
 	const height = 1024;
 
-	const base = randomItem(bases);
-	const chosenThemes = shuffle(themes).slice(0, 9);
-
+	const baseType = args.baseType || 'random';
+	const basePool = bases[baseType] || bases.random;
+	const base = randomItem(basePool);
+	const chosenThemes = getThemesForBaseType(baseType);
 	const svg = `
 	<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
 		<rect width="${width}" height="${height}" fill="#111827"/>
@@ -247,9 +257,90 @@ function getThemeColor(theme) {
 		Forest: '#22c55e',
 		Ghost: '#e5e7eb',
 		'Final Boss': '#ef4444',
+		Knight: '#60a5fa',
+		Mage: '#c084fc',
+		Shadow: '#64748b',
+		Samurai: '#f97316',
+		Mushroom: '#fb7185',
+		Crystal: '#67e8f9',
+		Swamp: '#84cc16',
+		Neon: '#ec4899',
+		Rust: '#b45309',
+		Satellite: '#38bdf8',
+		Laser: '#ef4444',
+		Chrome: '#cbd5e1',
+		Pizza: '#f97316',
+		Ramen: '#facc15',
+		Donut: '#fb7185',
+		Burger: '#a16207',
+		Taco: '#f59e0b',
+		Candy: '#f9a8d4',
 	};
 
 	return colors[theme] || '#38bdf8';
+}
+
+function getThemesForBaseType(baseType) {
+	const themeGroups = {
+		hero: [
+			'Knight',
+			'Mage',
+			'Royal',
+			'Angel',
+			'Shadow',
+			'Samurai',
+			'Cyberpunk',
+			'Final Boss',
+			'Ghost',
+		],
+		creature: [
+			'Forest',
+			'Void',
+			'Lava',
+			'Ghost',
+			'Mushroom',
+			'Crystal',
+			'Swamp',
+			'Final Boss',
+			'Pixel',
+		],
+		robot: [
+			'Mecha',
+			'Cyberpunk',
+			'Neon',
+			'Rust',
+			'Satellite',
+			'Pixel',
+			'Laser',
+			'Chrome',
+			'Final Boss',
+		],
+		animal: [
+			'Forest',
+			'Angel',
+			'Ghost',
+			'Royal',
+			'Cyberpunk',
+			'Void',
+			'Lava',
+			'Pixel',
+			'Final Boss',
+		],
+		food: [
+			'Pizza',
+			'Ramen',
+			'Donut',
+			'Burger',
+			'Taco',
+			'Candy',
+			'Lava',
+			'Royal',
+			'Final Boss',
+		],
+		random: themes,
+	};
+
+	return shuffle(themeGroups[baseType] || themes).slice(0, 9);
 }
 
 function randomItem(arr) {
