@@ -9,7 +9,8 @@ import fortuneCookie from '../generators/fortuneCookie.js';
 import abstractGen from '../generators/abstractGen.js';
 import birthdayCardGen from '../generators/birthdayCardGen.js';
 import { generateWebsiteDesign } from '../generators/websiteDesignGen.js';
-import { cuteRobotGen } from "../generators/cuteRobotGen.js";
+import { cuteRobotGen } from '../generators/cuteRobotGen.js';
+import mutationGen from '../generators/mutationGen.js';
 
 function validateAuth(req) {
 	const authHeader = req.headers?.authorization;
@@ -246,7 +247,7 @@ const generationMethods = {
 		},
 	},
 
-		cuteRobot: {
+	cuteRobot: {
 		name: 'Cute Robot Generator',
 		description:
 			'Generates a random cute robot companion with unique shapes, faces, and accessories.',
@@ -313,6 +314,40 @@ const generationMethods = {
 		},
 	},
 
+	mutationGen: {
+		name: 'Mutation Generator',
+		description:
+			'Generates alternate-universe mutation cards from a random base specimen.',
+		intent: 'image_generate',
+		credits: 0.1,
+		fields: {
+			baseType: {
+				label: 'Base Type',
+				required: false,
+				type: 'select',
+				default: '',
+				options: [
+					{ label: 'Random', value: '' },
+					{ label: 'Hero', value: 'hero' },
+					{ label: 'Creature', value: 'creature' },
+					{ label: 'Robot', value: 'robot' },
+					{ label: 'Animal', value: 'animal' },
+					{ label: 'Food', value: 'food' },
+				],
+			},
+			chaosLevel: {
+				label: 'Chaos Level',
+				required: false,
+				type: 'select',
+				default: 'medium',
+				options: [
+					{ label: 'Low', value: 'low' },
+					{ label: 'Medium', value: 'medium' },
+					{ label: 'Maximum', value: 'max' },
+				],
+			},
+		},
+	},
 };
 
 const methodHandlers = {
@@ -327,6 +362,7 @@ const methodHandlers = {
 	fortuneCookie,
 	websiteDesign: generateWebsiteDesign,
 	cuteRobot: cuteRobotGen,
+	mutationGen: mutationGen,
 };
 
 function normalizeArgs(method, args) {
@@ -431,6 +467,18 @@ function normalizeArgs(method, args) {
 		if ('gridLines' in a) {
 			const v = a.gridLines;
 			a.gridLines = v === true || v === 1 || v === '1';
+		}
+	}
+
+	if (method === 'mutationGen') {
+		if (typeof a.baseType === 'string') {
+			a.baseType = a.baseType.trim().toLowerCase();
+			if (!a.baseType) delete a.baseType;
+		}
+
+		if (typeof a.chaosLevel === 'string') {
+			a.chaosLevel = a.chaosLevel.trim().toLowerCase();
+			if (!a.chaosLevel) delete a.chaosLevel;
 		}
 	}
 
